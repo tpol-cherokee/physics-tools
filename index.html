@@ -20,7 +20,6 @@
     --surface:#FFFFFF;
     --panel-bg:#F3F5F8;
     --focus:#2E6E9E;
-    --warn:#A6402F;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -87,7 +86,6 @@
   }
   .paste-hint{font-size:0.76rem; color:var(--text-muted); margin:6px 0 0;}
   .copy-status{font-size:0.74rem; color:var(--ink-soft); margin-left:8px;}
-  .save-link-warning{font-size:0.78rem; color:var(--warn); font-weight:600; margin:8px 0 0;}
 
   p.intro{
     color:var(--text-muted);
@@ -97,12 +95,38 @@
   }
   .layout{
     display:grid;
-    grid-template-columns:360px 1fr;
-    gap:28px;
+    grid-template-columns:minmax(300px, 340px) minmax(0, 1fr);
+    gap:20px;
     align-items:start;
+  }
+  @media (max-width:1000px){
+    .layout{grid-template-columns:minmax(280px, 320px) minmax(0, 1fr); gap:16px;}
   }
   @media (max-width:860px){
     .layout{grid-template-columns:1fr;}
+  }
+
+  /* Chromebook-friendly sizing: keep the graph and controls compact on
+     common 11- to 14-inch student screens while remaining responsive. */
+  @media (min-width:861px) and (max-height:820px){
+    body{padding:16px 20px 28px; font-size:15px;}
+    header.top{padding-bottom:9px; margin-bottom:10px;}
+    .title-input{font-size:1.45rem;}
+    .toolbar{gap:6px;}
+    button{padding:6px 10px;}
+    p.intro{margin:-2px 0 14px; font-size:0.9rem;}
+    section.panel > h2{padding:7px 11px;}
+    .panel-body{padding:10px;}
+    .fit-controls{margin-bottom:9px;}
+    .graph-wrap{max-width:600px; margin:0 auto;}
+    .legend{margin-top:7px; font-size:0.76rem;}
+    table.compare{margin-top:9px; font-size:0.78rem;}
+    table.compare th{font-size:0.68rem; padding:4px 6px;}
+    table.compare td{padding:5px 6px;}
+  }
+
+  @media (min-width:861px) and (max-width:1200px){
+    .graph-wrap{max-width:600px; margin:0 auto;}
   }
   section.panel{
     background:var(--surface);
@@ -254,7 +278,6 @@
     <button id="copyLinkBtn" class="small">Copy</button>
   </div>
   <p class="paste-hint">Opening this link restores every dataset, label, and fit choice exactly as they are now.<span class="copy-status" id="copyStatus"></span></p>
-  <p class="save-link-warning" id="saveLinkWarning" hidden></p>
 </div>
 
 <p class="intro">Enter or paste your data, choose a relationship and a fitting method, and drag the line to match your points by eye — or switch to Two-Point or Least-Squares for a calculated fit. Add more datasets to plot several trials on one graph, or use the quick transforms to linearize a column by hand.</p>
@@ -1144,7 +1167,6 @@
     document.getElementById("pasteArea").value = "";
     statusMsg.textContent = "";
     document.getElementById("saveLinkBox").hidden = true;
-    document.getElementById("saveLinkWarning").hidden = true;
     try{ history.replaceState(null, "", location.pathname + location.search); }catch(e){}
     fullRender();
   });
@@ -1197,24 +1219,13 @@
   }
   function buildShareUrl(){
     var encoded = encodeState(serializeState());
-    var base = location.href.split("#")[0];
-    return base + "#state=" + encoded;
-  }
-  function isEmbedded(){
-    try{ return window.self !== window.top; }catch(e){ return true; }
+    return location.origin + location.pathname + "#state=" + encoded;
   }
 
   document.getElementById("saveLinkBtn").addEventListener("click", function(){
     var url = buildShareUrl();
     document.getElementById("saveLinkInput").value = url;
     document.getElementById("saveLinkBox").hidden = false;
-    var warn = document.getElementById("saveLinkWarning");
-    if(isEmbedded()){
-      warn.hidden = false;
-      warn.textContent = "This looks like a preview window, not this page's real address \u2014 the link above may not work once you leave. Download this file and open it directly in your browser, or save the link once it's hosted on your website.";
-    } else {
-      warn.hidden = true;
-    }
     try{
       var hashPart = url.split("#state=")[1];
       history.replaceState(null, "", "#state=" + hashPart);
