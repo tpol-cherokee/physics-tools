@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Graph &amp; Best-Fit Line Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FAFBFC;
+    --grid-major:#C7CFD8;
+    --grid-minor:#E8ECF1;
+    --ink:#1B2A4A;
+    --ink-soft:#445068;
+    --text:#22262C;
+    --text-muted:#5B6270;
+    --rule:#CBD2DB;
+    --surface:#FFFFFF;
+    --panel-bg:#F3F5F8;
+    --focus:#2E6E9E;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--text);
+    font-family:"Source Serif 4", Georgia, "Times New Roman", serif;
+    font-size:16px;
+    line-height:1.45;
+    padding:28px 32px 48px;
+  }
+  .mono{font-family:"IBM Plex Mono","Courier New",monospace;}
+  header.top{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:16px;
+    border-bottom:2px solid var(--ink);
+    padding-bottom:14px;
+    margin-bottom:16px;
+    flex-wrap:wrap;
+  }
+  .title-input{
+    font-family:"Source Serif 4", Georgia, serif;
+    font-weight:700;
+    font-size:1.7rem;
+    border:none;
+    background:transparent;
+    color:var(--ink);
+    padding:2px 4px;
+    min-width:220px;
+    flex:1 1 auto;
+  }
+  .title-input:focus{outline:2px solid var(--focus); outline-offset:2px; border-radius:2px;}
+  .toolbar{display:flex; gap:10px; flex-wrap:wrap;}
+  button{
+    font-family:"IBM Plex Mono","Courier New",monospace;
+    font-size:0.82rem;
+    letter-spacing:0.02em;
+    background:var(--surface);
+    color:var(--ink);
+    border:1px solid var(--ink-soft);
+    padding:7px 13px;
+    cursor:pointer;
+    border-radius:2px;
+  }
+  button:hover{background:var(--panel-bg);}
+  button:focus-visible{outline:2px solid var(--focus); outline-offset:1px;}
+  button:disabled{opacity:0.4; cursor:not-allowed;}
+  button.ghost{border-color:var(--rule); color:var(--text-muted);}
+  button.small{padding:3px 8px; font-size:0.72rem;}
+
+  .save-link-box{
+    background:var(--panel-bg);
+    border:1px solid var(--rule);
+    padding:12px 14px;
+    margin-bottom:18px;
+  }
+  .save-link-box label{font-family:"IBM Plex Mono",monospace; font-size:0.76rem; color:var(--text-muted); display:block; margin-bottom:6px;}
+  .save-link-row{display:flex; gap:8px;}
+  .save-link-row input{
+    flex:1; font-family:"IBM Plex Mono",monospace; font-size:0.8rem; padding:6px 8px;
+    border:1px solid var(--rule); border-radius:2px; background:var(--surface); color:var(--text);
+  }
+  .paste-hint{font-size:0.76rem; color:var(--text-muted); margin:6px 0 0;}
+  .copy-status{font-size:0.74rem; color:var(--ink-soft); margin-left:8px;}
+
+  p.intro{
+    color:var(--text-muted);
+    max-width:74ch;
+    margin:-2px 0 26px;
+    font-size:0.98rem;
+  }
+  .layout{
+    display:grid;
+    grid-template-columns:minmax(300px, 340px) minmax(0, 1fr);
+    gap:20px;
+    align-items:start;
+  }
+  @media (max-width:1000px){
+    .layout{grid-template-columns:minmax(280px, 320px) minmax(0, 1fr); gap:16px;}
+  }
+  @media (max-width:860px){
+    .layout{grid-template-columns:1fr;}
+  }
+
+  /* Chromebook-friendly sizing: keep the graph and controls compact on
+     common 11- to 14-inch student screens while remaining responsive. */
+  @media (min-width:861px) and (max-height:820px){
+    body{padding:16px 20px 28px; font-size:15px;}
+    header.top{padding-bottom:9px; margin-bottom:10px;}
+    .title-input{font-size:1.45rem;}
+    .toolbar{gap:6px;}
+    button{padding:6px 10px;}
+    p.intro{margin:-2px 0 14px; font-size:0.9rem;}
+    section.panel > h2{padding:7px 11px;}
+    .panel-body{padding:10px;}
+    .fit-controls{margin-bottom:9px;}
+    .graph-wrap{max-width:600px; margin:0 auto;}
+    .legend{margin-top:7px; font-size:0.76rem;}
+    table.compare{margin-top:9px; font-size:0.78rem;}
+    table.compare th{font-size:0.68rem; padding:4px 6px;}
+    table.compare td{padding:5px 6px;}
+  }
+
+  @media (min-width:861px) and (max-width:1200px){
+    .graph-wrap{max-width:600px; margin:0 auto;}
+  }
+  section.panel{
+    background:var(--surface);
+    border:1px solid var(--rule);
+  }
+  section.panel > h2{
+    font-size:0.78rem;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    font-family:"IBM Plex Mono",monospace;
+    color:var(--text-muted);
+    margin:0;
+    padding:10px 14px;
+    border-bottom:1px solid var(--rule);
+    background:var(--panel-bg);
+  }
+  .panel-body{padding:14px;}
+
+  .dataset-tabs{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;}
+  .dataset-tab{
+    border-radius:12px;
+    font-size:0.76rem;
+    padding:4px 11px;
+  }
+  .dataset-tools{display:flex; gap:8px; align-items:center; margin-bottom:14px; flex-wrap:wrap;}
+  .dataset-tools input{
+    flex:1; min-width:100px; font-family:"Source Serif 4",serif; font-size:0.9rem;
+    border:1px solid var(--rule); border-radius:2px; padding:5px 7px; background:var(--paper); color:var(--text);
+  }
+
+  table.data-table{width:100%; border-collapse:collapse; font-family:"IBM Plex Mono",monospace; font-size:0.88rem;}
+  table.data-table th{
+    text-align:left;
+    font-weight:500;
+    color:var(--text-muted);
+    border-bottom:1px solid var(--rule);
+    padding:4px 4px 6px;
+  }
+  table.data-table td{padding:3px 4px; border-bottom:1px solid var(--grid-minor);}
+  table.data-table input[type=number]{
+    width:100%;
+    font-family:inherit;
+    font-size:0.88rem;
+    border:1px solid var(--rule);
+    padding:4px 5px;
+    border-radius:2px;
+    background:var(--paper);
+    color:var(--text);
+  }
+  table.data-table input[type=number]:focus-visible{outline:2px solid var(--focus);}
+  table.data-table input[type=checkbox]{width:16px; height:16px;}
+  .row-actions{display:flex; gap:8px; margin-top:10px;}
+
+  .transform-row{
+    display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+    margin-top:14px; padding-top:12px; border-top:1px solid var(--rule);
+  }
+  .transform-row label{font-family:"IBM Plex Mono",monospace; font-size:0.76rem; color:var(--text-muted); display:flex; align-items:center; gap:6px;}
+  .transform-row select{
+    font-family:"IBM Plex Mono",monospace; font-size:0.8rem; padding:5px 6px; border:1px solid var(--rule);
+    border-radius:2px; background:var(--paper); color:var(--text);
+  }
+
+  details.paste{margin-top:14px; border-top:1px solid var(--rule); padding-top:10px;}
+  details.paste summary{cursor:pointer; font-family:"IBM Plex Mono",monospace; font-size:0.78rem; color:var(--ink-soft);}
+  details.paste textarea{
+    width:100%; height:90px; margin-top:8px; font-family:"IBM Plex Mono",monospace;
+    font-size:0.82rem; border:1px solid var(--rule); border-radius:2px; padding:8px; resize:vertical;
+  }
+  .status-msg{font-size:0.78rem; color:var(--ink-soft); min-height:1em; margin-top:6px;}
+
+  fieldset.axis-fields{border:none; padding:0; margin:16px 0 0;}
+  fieldset.axis-fields legend{
+    font-family:"IBM Plex Mono",monospace; font-size:0.78rem; text-transform:uppercase;
+    letter-spacing:0.08em; color:var(--text-muted); padding:0 0 6px;
+  }
+  .field-row{display:flex; gap:8px; margin-bottom:8px;}
+  .field-row label{
+    display:flex; flex-direction:column; gap:3px; font-size:0.74rem; color:var(--text-muted); flex:1;
+    font-family:"IBM Plex Mono",monospace;
+  }
+  .field-row input{
+    font-family:"Source Serif 4",serif; font-size:0.92rem; border:1px solid var(--rule);
+    border-radius:2px; padding:5px 7px; background:var(--paper); color:var(--text);
+  }
+  .range-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .range-grid input{font-family:"IBM Plex Mono",monospace; font-size:0.82rem;}
+
+  .fit-controls{margin-bottom:14px;}
+  .fit-controls .rel-row{margin-bottom:10px;}
+  .fit-controls select#relationshipSelect{
+    width:100%; font-family:"IBM Plex Mono",monospace; font-size:0.85rem; padding:7px 8px;
+    border:1px solid var(--ink-soft); border-radius:2px; background:var(--surface); color:var(--ink);
+  }
+  .method-switch{display:flex; gap:6px; flex-wrap:wrap;}
+  .method-switch button{flex:1; min-width:110px; text-align:center;}
+  .method-switch button.active{background:var(--ink); color:#fff; border-color:var(--ink);}
+
+  .graph-wrap{width:100%;}
+  svg#graph{width:100%; height:auto; display:block; touch-action:none;}
+  .handle{cursor:grab;}
+  .handle:active{cursor:grabbing;}
+  .handle:focus-visible{outline:2px solid var(--focus); outline-offset:2px;}
+
+  .legend{display:flex; gap:14px; flex-wrap:wrap; margin-top:12px; font-size:0.82rem;}
+  .legend-item{display:flex; align-items:center; gap:6px; color:var(--text-muted);}
+
+  table.compare{width:100%; border-collapse:collapse; margin-top:16px; font-size:0.86rem;}
+  table.compare caption{
+    text-align:left; font-family:"IBM Plex Mono",monospace; font-size:0.76rem;
+    text-transform:uppercase; letter-spacing:0.07em; color:var(--text-muted); padding-bottom:8px;
+  }
+  table.compare th{
+    text-align:left; font-family:"IBM Plex Mono",monospace; font-weight:500; font-size:0.74rem;
+    color:var(--text-muted); border-bottom:1px solid var(--rule); padding:5px 8px;
+  }
+  table.compare td{padding:7px 8px; border-bottom:1px solid var(--grid-minor); font-family:"IBM Plex Mono",monospace;}
+  table.compare td.eq{font-family:"Source Serif 4",serif; font-size:0.95rem;}
+  .swatch{display:inline-block; width:11px; height:11px; border-radius:50%; margin-right:7px; vertical-align:middle;}
+  .muted{color:var(--text-muted);}
+
+  @media print{
+    body{padding:10px 16px;}
+    button{display:none;}
+    .save-link-box, .dataset-tools, .dataset-tabs, .transform-row, details.paste, .fit-controls{display:none;}
+    section.panel > h2{background:none; border-bottom:1px solid #000;}
+    .title-input{border:none;}
+    table.data-table input, .field-row input{border:none; background:none; padding:1px 2px;}
+    .layout{grid-template-columns:1fr; gap:14px;}
+    svg#graph{max-width:640px;}
+  }
+
+  /* Chromebook 1366 x 768 layout */
+  @media (min-width: 1100px) and (max-width: 1450px) and (min-height: 700px) and (max-height: 850px){
+    body{padding:12px 16px 20px; font-size:14px;}
+    header.top{padding-bottom:8px; margin-bottom:10px; gap:10px;}
+    .title-input{font-size:1.35rem; min-width:180px;}
+    .toolbar{gap:5px;}
+    button{font-size:.74rem; padding:5px 9px;}
+    .intro{margin:6px 0 10px; font-size:.9rem;}
+    .layout{grid-template-columns:300px minmax(0,1fr); gap:14px;}
+    .panel-header{padding:7px 10px;}
+    .panel-body{padding:9px 10px;}
+    .fit-controls{margin-top:8px;}
+    .graph-wrap{max-width:610px; margin:0 auto;}
+    .legend{font-size:.78rem;}
+    .comparison{font-size:.78rem;}
+  }
+
+</style>
+</head>
+<body>
+
+<header class="top">
+  <input id="titleInput" class="title-input" value="Lab Graph" aria-label="Graph title">
+  <div class="toolbar">
+    <button id="saveLinkBtn" class="ghost">Save link</button>
+    <button id="printBtn" class="ghost">Print</button>
+    <button id="resetBtn" class="ghost">Reset</button>
+  </div>
+</header>
+
+<div class="save-link-box" id="saveLinkBox" hidden>
+  <label for="saveLinkInput">Link to this graph — bookmark or copy it to pick up right where you left off</label>
+  <div class="save-link-row">
+    <input id="saveLinkInput" type="text" readonly aria-label="Shareable link to this graph's current state">
+    <button id="copyLinkBtn" class="small">Copy</button>
+  </div>
+  <p class="paste-hint">Opening this link restores every dataset, label, and fit choice exactly as they are now.<span class="copy-status" id="copyStatus"></span></p>
+</div>
+
+<p class="intro">Enter or paste your data, choose a relationship and a fitting method, and drag the line to match your points by eye — or switch to Two-Point or Least-Squares for a calculated fit. Add more datasets to plot several trials on one graph, or use the quick transforms to linearize a column by hand.</p>
+
+<div class="layout">
+
+  <section class="panel">
+    <h2>Data</h2>
+    <div class="panel-body">
+      <div class="dataset-tabs" id="datasetTabs"></div>
+      <div class="dataset-tools">
+        <input id="datasetLabel" type="text" aria-label="Dataset label" placeholder="Dataset label">
+        <button id="addDatasetBtn" class="small">+ Dataset</button>
+        <button id="removeDatasetBtn" class="small ghost">Remove</button>
+      </div>
+
+      <table class="data-table" id="dataTable">
+        <thead>
+          <tr><th>x</th><th>y</th><th title="Use for two-point method">2-pt</th><th></th></tr>
+        </thead>
+        <tbody id="dataRows"></tbody>
+      </table>
+      <div class="row-actions">
+        <button id="addRowBtn" class="small">+ Add point</button>
+      </div>
+      <div class="status-msg" id="statusMsg"></div>
+
+      <div class="transform-row">
+        <label>Transform
+          <select id="transformSelect">
+            <option value="square">x² (square)</option>
+            <option value="sqrt">√x (square root)</option>
+            <option value="cube">x³ (cube)</option>
+            <option value="inverse">1/x (inverse)</option>
+          </select>
+        </label>
+        <button id="applyXBtn" class="small">Apply to X</button>
+        <button id="applyYBtn" class="small">Apply to Y</button>
+      </div>
+
+      <details class="paste">
+        <summary>Paste data instead</summary>
+        <textarea id="pasteArea" placeholder="1, 2&#10;2, 4.1&#10;3, 5.9"></textarea>
+        <p class="paste-hint">One point per line, x and y separated by a comma, space, or tab. Replaces this dataset's table.</p>
+        <button id="loadPasteBtn" class="small">Load pasted data</button>
+      </details>
+
+      <fieldset class="axis-fields">
+        <legend>Axis labels (whole graph)</legend>
+        <div class="field-row">
+          <label>X label <input id="xLabel" type="text" value="Time"></label>
+          <label>X unit <input id="xUnit" type="text" value="s"></label>
+        </div>
+        <div class="field-row">
+          <label>Y label <input id="yLabel" type="text" value="Distance"></label>
+          <label>Y unit <input id="yUnit" type="text" value="m"></label>
+        </div>
+      </fieldset>
+
+      <fieldset class="axis-fields">
+        <legend>Axis range (optional)</legend>
+        <div class="range-grid">
+          <input id="xMinIn" type="number" placeholder="x min (auto)">
+          <input id="xMaxIn" type="number" placeholder="x max (auto)">
+          <input id="yMinIn" type="number" placeholder="y min (auto)">
+          <input id="yMaxIn" type="number" placeholder="y max (auto)">
+        </div>
+      </fieldset>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Graph</h2>
+    <div class="panel-body">
+      <div class="fit-controls">
+        <div class="rel-row">
+          <select id="relationshipSelect" aria-label="Best-fit relationship">
+            <option value="linear">Linear — y = a·x + b</option>
+            <option value="squared">Squared — y = a·x² + b</option>
+            <option value="sqrt">Square Root — y = a·√x + b</option>
+            <option value="inverse">Inverse — y = a/x + b</option>
+            <option value="invSquared">Inverse Squared — y = a/x² + b</option>
+            <option value="invSqrt">Inverse Square Root — y = a/√x + b</option>
+            <option value="exponential">Exponential — y = a·e^(b·x)</option>
+          </select>
+        </div>
+        <div class="method-switch" role="group" aria-label="Best-fit method">
+          <button data-method="hand" class="active">Hand-drawn</button>
+          <button data-method="two">Two-point</button>
+          <button data-method="lsq">Least-squares</button>
+        </div>
+      </div>
+
+      <div class="graph-wrap">
+        <svg id="graph" viewBox="0 0 700 460" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+      <div class="legend" id="legend"></div>
+
+      <table class="compare" id="compareTable">
+        <caption>Best-fit comparison for the active dataset (y = a·f(x) + b; exponential: y = a·e^(b·x))</caption>
+        <thead>
+          <tr><th></th><th>a</th><th>b</th><th>Equation</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var COLORS = ["#1B2A4A","#A6402F","#2E6E62","#8A6D3B","#5C4A8A","#3D7A3D","#B0456B","#456C8C"];
+
+  function fmt(n){
+    if(n===null || n===undefined || !isFinite(n)) return "—";
+    var v = parseFloat(n.toPrecision(4));
+    if(Object.is(v,-0)) v = 0;
+    return v.toString();
+  }
+  function signPart(b){
+    return (b < 0 ? "\u2212" : "+") + " " + fmt(Math.abs(b));
+  }
+
+  var RELATIONSHIPS = {
+    linear: {
+      key:"linear", label:"Linear",
+      xDomain:null, yDomain:null,
+      xT:function(x){return x;}, yT:function(y){return y;},
+      natural:function(s,i){return {a:s,b:i};},
+      eq:function(a,b,xN,yN){ return yN+" = "+fmt(a)+"\u00B7"+xN+" "+signPart(b); },
+      curveY:function(x,a,b){ return a*x+b; }
+    },
+    squared: {
+      key:"squared", label:"Squared",
+      xDomain:null, yDomain:null,
+      xT:function(x){return x*x;}, yT:function(y){return y;},
+      natural:function(s,i){return {a:s,b:i};},
+      eq:function(a,b,xN,yN){ return yN+" = "+fmt(a)+"\u00B7"+xN+"\u00B2 "+signPart(b); },
+      curveY:function(x,a,b){ return a*x*x+b; }
+    },
+    sqrt: {
+      key:"sqrt", label:"Square Root",
+      xDomain:function(x){return x>=0;}, yDomain:null,
+      xT:function(x){return Math.sqrt(x);}, yT:function(y){return y;},
+      natural:function(s,i){return {a:s,b:i};},
+      eq:function(a,b,xN,yN){ return yN+" = "+fmt(a)+"\u00B7\u221A"+xN+" "+signPart(b); },
+      curveY:function(x,a,b){ return x>=0 ? a*Math.sqrt(x)+b : null; }
+    },
+    inverse: {
+      key:"inverse", label:"Inverse",
+      xDomain:function(x){return x!==0;}, yDomain:null,
+      xT:function(x){return 1/x;}, yT:function(y){return y;},
+      natural:function(s,i){return {a:s,b:i};},
+      eq:function(a,b,xN,yN){ return yN+" = "+fmt(a)+"/"+xN+" "+signPart(b); },
+      curveY:function(x,a,b){ return x!==0 ? a/x+b : null; }
+    },
+    invSquared: {
+      key:"invSquared", label:"Inverse Squared",
+      xDomain:function(x){return x!==0;}, yDomain:null,
+      xT:function(x){return 1/(x*x);}, yT:function(y){return y;},
+      natural:function(s,i){return {a:s,b:i};},
+      eq:function(a,b,xN,yN){ return yN+" = "+fmt(a)+"/"+xN+"\u00B2 "+signPart(b); },
+      curveY:function(x,a,b){ return x!==0 ? a/(x*x)+b : null; }
+    },
+    invSqrt: {
+      key:"invSqrt", label:"Inverse Square Root",
+      xDomain:function(x){return x>0;}, yDomain:null,
+      xT:function(x){return 1/Math.sqrt(x);}, yT:function(y){return y;},
+      natural:function(s,i){return {a:s,b:i};},
+      eq:function(a,b,xN,yN){ return yN+" = "+fmt(a)+"/\u221A"+xN+" "+signPart(b); },
+      curveY:function(x,a,b){ return x>0 ? a/Math.sqrt(x)+b : null; }
+    },
+    exponential: {
+      key:"exponential", label:"Exponential",
+      xDomain:null, yDomain:function(y){return y>0;},
+      xT:function(x){return x;}, yT:function(y){return Math.log(y);},
+      natural:function(s,i){return {a:Math.exp(i), b:s};},
+      eq:function(a,b,xN,yN){ return yN+" = "+fmt(a)+"\u00B7e^("+fmt(b)+"\u00B7"+xN+")"; },
+      curveY:function(x,a,b){ return a*Math.exp(b*x); }
+    }
+  };
+
+  var TRANSFORMS = {
+    square: {label:"Square (x\u00B2)", fn:function(v){return v*v;}},
+    sqrt:   {label:"Square root (\u221Ax)", fn:function(v){return v>=0 ? Math.sqrt(v) : NaN;}},
+    cube:   {label:"Cube (x\u00B3)", fn:function(v){return v*v*v;}},
+    inverse:{label:"Inverse (1/x)", fn:function(v){return v!==0 ? 1/v : NaN;}}
+  };
+
+  function defaultPoints(){
+    return [
+      {x:0,   y:0.2, sel:false},
+      {x:1,   y:2.1, sel:false},
+      {x:2,   y:3.9, sel:false},
+      {x:3,   y:6.2, sel:false},
+      {x:4,   y:7.8, sel:false}
+    ];
+  }
+
+  var state = {
+    _nextId: 0,
+    datasets: [],
+    activeIndex: 0,
+    manual: {xMin:null, xMax:null, yMin:null, yMax:null}
+  };
+
+  function newDataset(label, color, points){
+    return {
+      id: "ds" + (++state._nextId),
+      label: label,
+      color: color,
+      relationship: "linear",
+      method: "hand",
+      points: points || [{x:"",y:"",sel:false},{x:"",y:"",sel:false}],
+      hand: null
+    };
+  }
+  function newDatasetFromSaved(d, i){
+    return {
+      id: "ds" + (++state._nextId),
+      label: d.label || ("Dataset " + (i+1)),
+      color: d.color || COLORS[i % COLORS.length],
+      relationship: (d.relationship && RELATIONSHIPS[d.relationship]) ? d.relationship : "linear",
+      method: (d.method === "two" || d.method === "lsq") ? d.method : "hand",
+      points: (d.points || []).map(function(p){ return {x:p.x, y:p.y, sel:!!p.sel}; }),
+      hand: (d.hand && isFinite(d.hand.x1)) ? {x1:d.hand.x1,y1:d.hand.y1,x2:d.hand.x2,y2:d.hand.y2} : null
+    };
+  }
+  function activeDataset(){ return state.datasets[state.activeIndex]; }
+
+  state.datasets.push(newDataset("Dataset 1", COLORS[0], defaultPoints()));
+
+  var scales = null;
+
+  var svg = document.getElementById("graph");
+  var dataRowsEl = document.getElementById("dataRows");
+  var statusMsg = document.getElementById("statusMsg");
+  var compareBody = document.querySelector("#compareTable tbody");
+  var legendEl = document.getElementById("legend");
+
+  var titleInput = document.getElementById("titleInput");
+  var xLabelIn = document.getElementById("xLabel");
+  var xUnitIn = document.getElementById("xUnit");
+  var yLabelIn = document.getElementById("yLabel");
+  var yUnitIn = document.getElementById("yUnit");
+  var xMinIn = document.getElementById("xMinIn");
+  var xMaxIn = document.getElementById("xMaxIn");
+  var yMinIn = document.getElementById("yMinIn");
+  var yMaxIn = document.getElementById("yMaxIn");
+
+  function unitSlope(){
+    var xu = xUnitIn.value.trim(), yu = yUnitIn.value.trim();
+    if(xu && yu) return " " + yu + "/" + xu;
+    if(yu) return " " + yu;
+    return "";
+  }
+  function unitIntercept(){
+    var yu = yUnitIn.value.trim();
+    return yu ? " " + yu : "";
+  }
+  function unitForA(rel){ return rel.key === "linear" ? unitSlope() : ""; }
+  function unitForB(rel){ return rel.key === "linear" ? unitIntercept() : ""; }
+
+  function relXOk(rel, x){ return rel.xDomain ? rel.xDomain(x) : true; }
+  function relYOk(rel, y){ return rel.yDomain ? rel.yDomain(y) : true; }
+
+  function isNum(p){ return isFinite(p.x) && isFinite(p.y) && p.x !== "" && p.y !== ""; }
+
+  function getNumericPoints(ds){
+    return ds.points.filter(isNum);
+  }
+
+  function niceNum(range, round){
+    if(range <= 0) range = 1;
+    var exponent = Math.floor(Math.log10(range));
+    var fraction = range / Math.pow(10, exponent);
+    var niceFraction;
+    if(round){
+      if(fraction < 1.5) niceFraction = 1;
+      else if(fraction < 3) niceFraction = 2;
+      else if(fraction < 7) niceFraction = 5;
+      else niceFraction = 10;
+    } else {
+      if(fraction <= 1) niceFraction = 1;
+      else if(fraction <= 2) niceFraction = 2;
+      else if(fraction <= 5) niceFraction = 5;
+      else niceFraction = 10;
+    }
+    return niceFraction * Math.pow(10, exponent);
+  }
+  function niceRange(min, max, maxTicks){
+    maxTicks = maxTicks || 7;
+    if(min === max){ min -= 1; max += 1; }
+    var range = niceNum(max - min, false);
+    var step = niceNum(range / (maxTicks - 1), true);
+    var niceMin = Math.floor(min / step) * step;
+    var niceMax = Math.ceil(max / step) * step;
+    return {min: niceMin, max: niceMax, step: step};
+  }
+
+  function computeAxisRange(){
+    var xs = [], ys = [];
+    state.datasets.forEach(function(ds){
+      ds.points.forEach(function(p){
+        if(isNum(p)){ xs.push(p.x); ys.push(p.y); }
+      });
+    });
+    var act = activeDataset();
+    if(act.hand){
+      xs.push(act.hand.x1, act.hand.x2);
+      ys.push(act.hand.y1, act.hand.y2);
+    }
+    if(xs.length === 0){ xs = [0,1]; ys = [0,1]; }
+
+    var rx, ry;
+    if(state.manual.xMin !== null && state.manual.xMax !== null){
+      rx = {min: state.manual.xMin, max: state.manual.xMax, step: niceNum((state.manual.xMax-state.manual.xMin)/6, true)};
+    } else {
+      var xMin = Math.min.apply(null, xs), xMax = Math.max.apply(null, xs);
+      var pad = (xMax - xMin) * 0.1 || 1;
+      rx = niceRange(xMin - pad, xMax + pad);
+    }
+    if(state.manual.yMin !== null && state.manual.yMax !== null){
+      ry = {min: state.manual.yMin, max: state.manual.yMax, step: niceNum((state.manual.yMax-state.manual.yMin)/6, true)};
+    } else {
+      var yMin = Math.min.apply(null, ys), yMax = Math.max.apply(null, ys);
+      var pady = (yMax - yMin) * 0.1 || 1;
+      ry = niceRange(yMin - pady, yMax + pady);
+    }
+    return {x: rx, y: ry};
+  }
+
+  function ensureHand(ds){
+    if(ds.hand) return;
+    var midY = (scales.yMin + scales.yMax) / 2;
+    var span = (scales.xMax - scales.xMin);
+    ds.hand = {
+      x1: scales.xMin + span * 0.15,
+      y1: midY - (scales.yMax - scales.yMin) * 0.12,
+      x2: scales.xMax - span * 0.15,
+      y2: midY + (scales.yMax - scales.yMin) * 0.12
+    };
+  }
+
+  function buildScales(){
+    var r = computeAxisRange();
+    var left = 68, right = 20, top = 20, bottom = 64;
+    var width = 700, height = 460;
+    scales = {
+      xMin: r.x.min, xMax: r.x.max, xStep: r.x.step,
+      yMin: r.y.min, yMax: r.y.max, yStep: r.y.step,
+      left: left, right: right, top: top, bottom: bottom,
+      width: width, height: height,
+      plotW: width - left - right,
+      plotH: height - top - bottom
+    };
+    state.datasets.forEach(function(ds){ ensureHand(ds); });
+  }
+
+  function xToPx(x){ return scales.left + (x - scales.xMin) / (scales.xMax - scales.xMin) * scales.plotW; }
+  function yToPx(y){ return scales.top + scales.plotH - (y - scales.yMin) / (scales.yMax - scales.yMin) * scales.plotH; }
+  function pxToX(px){ return scales.xMin + (px - scales.left) / scales.plotW * (scales.xMax - scales.xMin); }
+  function pxToY(py){ return scales.yMin + (scales.top + scales.plotH - py) / scales.plotH * (scales.yMax - scales.yMin); }
+  function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
+
+  function clampXForRel(rel, x){
+    if(rel.key === "sqrt" || rel.key === "invSqrt"){
+      var eps = Math.max((scales.xMax - scales.xMin) * 0.02, 1e-6);
+      return Math.max(x, eps);
+    }
+    if(rel.key === "inverse" || rel.key === "invSquared"){
+      var eps2 = Math.max((scales.xMax - scales.xMin) * 0.02, 1e-6);
+      return Math.abs(x) < eps2 ? (x < 0 ? -eps2 : eps2) : x;
+    }
+    return x;
+  }
+  function clampYForRel(rel, y){
+    if(rel.key === "exponential"){
+      var eps = Math.max((scales.yMax - scales.yMin) * 0.02, 1e-6);
+      return Math.max(y, eps);
+    }
+    return y;
+  }
+  function sanitizeHandForRel(ds, rel){
+    if(!ds.hand) return;
+    ds.hand.x1 = clampXForRel(rel, ds.hand.x1);
+    ds.hand.x2 = clampXForRel(rel, ds.hand.x2);
+    ds.hand.y1 = clampYForRel(rel, ds.hand.y1);
+    ds.hand.y2 = clampYForRel(rel, ds.hand.y2);
+  }
+
+  function svgEl(tag, attrs){
+    var el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for(var k in attrs){ el.setAttribute(k, attrs[k]); }
+    return el;
+  }
+
+  function ticksFor(min, max, step){
+    var out = [];
+    var start = Math.ceil(min / step) * step;
+    for(var v = start; v <= max + step*1e-6; v += step){
+      out.push(Math.round(v / step) * step);
+    }
+    return out;
+  }
+
+  function linFit(pts){
+    var n = pts.length;
+    if(n < 2) return null;
+    var sx=0, sy=0, sxy=0, sxx=0;
+    pts.forEach(function(p){ sx+=p.x; sy+=p.y; sxy+=p.x*p.y; sxx+=p.x*p.x; });
+    var denom = (n*sxx - sx*sx);
+    if(denom === 0) return {slope: null, intercept: null, vertical:true};
+    var slope = (n*sxy - sx*sy) / denom;
+    var intercept = (sy - slope*sx) / n;
+    return {slope: slope, intercept: intercept};
+  }
+
+  function exactLineThrough(x1,y1,x2,y2){
+    if(x1 === x2) return {slope:null, intercept:null, vertical:true};
+    var slope = (y2 - y1) / (x2 - x1);
+    var intercept = y1 - slope * x1;
+    return {slope: slope, intercept: intercept};
+  }
+
+  function lsqFitForDataset(ds, rel){
+    var pts = ds.points.filter(function(p){
+      return isNum(p) && relXOk(rel, p.x) && relYOk(rel, p.y);
+    }).map(function(p){ return {x: rel.xT(p.x), y: rel.yT(p.y)}; });
+    return linFit(pts);
+  }
+  function twoPointFitForDataset(ds, rel){
+    var sel = ds.points.filter(function(p){
+      return p.sel && isNum(p) && relXOk(rel, p.x) && relYOk(rel, p.y);
+    });
+    if(sel.length !== 2) return null;
+    var a = sel[0], b = sel[1];
+    return exactLineThrough(rel.xT(a.x), rel.yT(a.y), rel.xT(b.x), rel.yT(b.y));
+  }
+  function handFitForDataset(ds, rel){
+    if(!ds.hand) return null;
+    sanitizeHandForRel(ds, rel);
+    var X1=rel.xT(ds.hand.x1), Y1=rel.yT(ds.hand.y1), X2=rel.xT(ds.hand.x2), Y2=rel.yT(ds.hand.y2);
+    if(!isFinite(X1)||!isFinite(Y1)||!isFinite(X2)||!isFinite(Y2)) return null;
+    return exactLineThrough(X1,Y1,X2,Y2);
+  }
+  function computeRawFit(ds){
+    var rel = RELATIONSHIPS[ds.relationship];
+    if(ds.method === "hand") return handFitForDataset(ds, rel);
+    if(ds.method === "two") return twoPointFitForDataset(ds, rel);
+    return lsqFitForDataset(ds, rel);
+  }
+  function naturalize(raw, rel){
+    if(!raw || raw.vertical) return null;
+    if(raw.slope === null || !isFinite(raw.slope) || !isFinite(raw.intercept)) return null;
+    var nat = rel.natural(raw.slope, raw.intercept);
+    if(!isFinite(nat.a) || !isFinite(nat.b)) return null;
+    return nat;
+  }
+
+  function sampleCurvePath(rel, a, b){
+    var N = 140;
+    var segments = [];
+    var current = null;
+    for(var i=0; i<=N; i++){
+      var x = scales.xMin + (scales.xMax - scales.xMin) * i / N;
+      var ok = relXOk(rel, x);
+      var y = ok ? rel.curveY(x, a, b) : null;
+      if(y === null || y === undefined || !isFinite(y)){
+        current = null;
+        continue;
+      }
+      var px = xToPx(x), py = yToPx(y);
+      if(current === null){ current = []; segments.push(current); }
+      current.push(px + "," + py);
+    }
+    return segments.map(function(seg){ return "M" + seg.join(" L"); }).join(" ");
+  }
+
+  function renderGraph(){
+    while(svg.firstChild) svg.removeChild(svg.firstChild);
+
+    var defs = svgEl("defs", {});
+    var clip = svgEl("clipPath", {id:"plotClip"});
+    clip.appendChild(svgEl("rect", {x:scales.left, y:scales.top, width:scales.plotW, height:scales.plotH}));
+    defs.appendChild(clip);
+    svg.appendChild(defs);
+
+    var xTicks = ticksFor(scales.xMin, scales.xMax, scales.xStep);
+    var yTicks = ticksFor(scales.yMin, scales.yMax, scales.yStep);
+
+    xTicks.forEach(function(t){
+      var minorStep = scales.xStep/5;
+      for(var m=1; m<5; m++){
+        var mv = t - scales.xStep + m*minorStep;
+        if(mv > scales.xMin && mv < scales.xMax){
+          var mx = xToPx(mv);
+          svg.appendChild(svgEl("line", {x1:mx,y1:scales.top,x2:mx,y2:scales.top+scales.plotH,stroke:"var(--grid-minor)","stroke-width":1}));
+        }
+      }
+    });
+    yTicks.forEach(function(t){
+      var minorStep = scales.yStep/5;
+      for(var m=1; m<5; m++){
+        var mv = t - scales.yStep + m*minorStep;
+        if(mv > scales.yMin && mv < scales.yMax){
+          var my = yToPx(mv);
+          svg.appendChild(svgEl("line", {x1:scales.left,y1:my,x2:scales.left+scales.plotW,y2:my,stroke:"var(--grid-minor)","stroke-width":1}));
+        }
+      }
+    });
+
+    xTicks.forEach(function(t){
+      var px = xToPx(t);
+      svg.appendChild(svgEl("line", {x1:px,y1:scales.top,x2:px,y2:scales.top+scales.plotH,stroke:"var(--grid-major)","stroke-width":1}));
+      svg.appendChild(svgEl("line", {x1:px,y1:scales.top+scales.plotH,x2:px,y2:scales.top+scales.plotH+6,stroke:"var(--ink-soft)","stroke-width":1}));
+      var lbl = svgEl("text", {x:px,y:scales.top+scales.plotH+22,"text-anchor":"middle","font-size":"12","font-family":"IBM Plex Mono, monospace",fill:"var(--text-muted)"});
+      lbl.textContent = fmt(t);
+      svg.appendChild(lbl);
+    });
+    yTicks.forEach(function(t){
+      var py = yToPx(t);
+      svg.appendChild(svgEl("line", {x1:scales.left,y1:py,x2:scales.left+scales.plotW,y2:py,stroke:"var(--grid-major)","stroke-width":1}));
+      svg.appendChild(svgEl("line", {x1:scales.left-6,y1:py,x2:scales.left,y2:py,stroke:"var(--ink-soft)","stroke-width":1}));
+      var lbl = svgEl("text", {x:scales.left-10,y:py+4,"text-anchor":"end","font-size":"12","font-family":"IBM Plex Mono, monospace",fill:"var(--text-muted)"});
+      lbl.textContent = fmt(t);
+      svg.appendChild(lbl);
+    });
+
+    svg.appendChild(svgEl("rect", {x:scales.left,y:scales.top,width:scales.plotW,height:scales.plotH,fill:"none",stroke:"var(--ink-soft)","stroke-width":1.3}));
+
+    var xAxisLabel = svgEl("text", {x: scales.left + scales.plotW/2, y: scales.height - 10, "text-anchor":"middle","font-size":"13","font-family":"Source Serif 4, serif",fill:"var(--ink)"});
+    var xu = xUnitIn.value.trim();
+    xAxisLabel.textContent = xLabelIn.value.trim() + (xu ? " (" + xu + ")" : "");
+    svg.appendChild(xAxisLabel);
+
+    var yAxisLabel = svgEl("text", {x: 16, y: scales.top + scales.plotH/2, "text-anchor":"middle","font-size":"13","font-family":"Source Serif 4, serif",fill:"var(--ink)", transform:"rotate(-90 16 " + (scales.top + scales.plotH/2) + ")"});
+    var yu = yUnitIn.value.trim();
+    yAxisLabel.textContent = yLabelIn.value.trim() + (yu ? " (" + yu + ")" : "");
+    svg.appendChild(yAxisLabel);
+
+    state.datasets.forEach(function(ds, dsIndex){
+      var rel = RELATIONSHIPS[ds.relationship];
+      var isActive = dsIndex === state.activeIndex;
+      sanitizeHandForRel(ds, rel);
+
+      getNumericPoints(ds).forEach(function(p){
+        var cx = xToPx(p.x), cy = yToPx(p.y);
+        var isSel = p.sel && ds.method === "two" && isActive;
+        svg.appendChild(svgEl("circle", {
+          cx:cx, cy:cy, r: isSel ? 5.5 : 5,
+          fill:"#fff", stroke: ds.color,
+          "stroke-width": isSel ? 2.8 : 1.7,
+          opacity: isActive ? 1 : 0.5
+        }));
+      });
+
+      var raw = computeRawFit(ds);
+      var nat = naturalize(raw, rel);
+      if(nat){
+        var d = sampleCurvePath(rel, nat.a, nat.b);
+        if(d){
+          svg.appendChild(svgEl("path", {
+            d:d, fill:"none", stroke: ds.color,
+            "stroke-width": isActive ? 2.3 : 1.6,
+            "clip-path":"url(#plotClip)",
+            opacity: isActive ? 1 : 0.55
+          }));
+        }
+      }
+
+      if(ds.method === "hand" && isActive){
+        [["1", ds.hand.x1, ds.hand.y1], ["2", ds.hand.x2, ds.hand.y2]].forEach(function(h){
+          var cx = xToPx(h[1]), cy = yToPx(h[2]);
+          var circle = svgEl("circle", {cx:cx,cy:cy,r:7,fill:ds.color,stroke:"#fff","stroke-width":2,"class":"handle",tabindex:"0","data-handle":h[0]});
+          svg.appendChild(circle);
+          attachHandleDrag(circle, h[0]);
+        });
+      }
+    });
+
+    renderCompareTable();
+    renderLegend();
+  }
+
+  function attachHandleDrag(el, which){
+    function moveTo(clientX, clientY){
+      var pt = svg.createSVGPoint();
+      pt.x = clientX; pt.y = clientY;
+      var inv = svg.getScreenCTM().inverse();
+      var loc = pt.matrixTransform(inv);
+      var px = clamp(loc.x, scales.left, scales.left+scales.plotW);
+      var py = clamp(loc.y, scales.top, scales.top+scales.plotH);
+      var ds = activeDataset();
+      var rel = RELATIONSHIPS[ds.relationship];
+      var dx = clampXForRel(rel, pxToX(px));
+      var dy = clampYForRel(rel, pxToY(py));
+      if(which === "1"){ ds.hand.x1 = dx; ds.hand.y1 = dy; }
+      else { ds.hand.x2 = dx; ds.hand.y2 = dy; }
+      renderGraph();
+    }
+    el.addEventListener("pointerdown", function(e){
+      e.preventDefault();
+      function onMove(ev){ moveTo(ev.clientX, ev.clientY); }
+      function onUp(){
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+      }
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+    });
+    el.addEventListener("keydown", function(e){
+      var key = e.key;
+      if(["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].indexOf(key) === -1) return;
+      e.preventDefault();
+      var ds = activeDataset();
+      var rel = RELATIONSHIPS[ds.relationship];
+      var stepX = (scales.xMax-scales.xMin) * 0.02;
+      var stepY = (scales.yMax-scales.yMin) * 0.02;
+      var h = ds.hand;
+      var x = which === "1" ? h.x1 : h.x2;
+      var y = which === "1" ? h.y1 : h.y2;
+      if(key === "ArrowLeft") x -= stepX;
+      if(key === "ArrowRight") x += stepX;
+      if(key === "ArrowUp") y += stepY;
+      if(key === "ArrowDown") y -= stepY;
+      x = clampXForRel(rel, clamp(x, scales.xMin, scales.xMax));
+      y = clampYForRel(rel, clamp(y, scales.yMin, scales.yMax));
+      if(which === "1"){ h.x1 = x; h.y1 = y; } else { h.x2 = x; h.y2 = y; }
+      renderGraph();
+    });
+  }
+
+  function renderCompareTable(){
+    var ds = activeDataset();
+    var rel = RELATIONSHIPS[ds.relationship];
+    compareBody.innerHTML = "";
+    var rows = [
+      {label:"Hand-drawn", raw: handFitForDataset(ds, rel), note:null},
+      {label:"Two-point", raw: twoPointFitForDataset(ds, rel), note:"Select exactly 2 valid points"},
+      {label:"Least-squares", raw: lsqFitForDataset(ds, rel), note:"Need \u2265 2 valid points"}
+    ];
+    rows.forEach(function(r){
+      var tr = document.createElement("tr");
+      var nameTd = document.createElement("td");
+      nameTd.innerHTML = '<span class="swatch" style="background:'+ds.color+'"></span>' + r.label;
+      tr.appendChild(nameTd);
+
+      var aTd = document.createElement("td");
+      var bTd = document.createElement("td");
+      var eqTd = document.createElement("td");
+      eqTd.className = "eq";
+
+      if(r.raw && r.raw.vertical){
+        aTd.textContent = "undefined";
+        bTd.textContent = "\u2014";
+        eqTd.innerHTML = '<span class="muted">Not fittable here (vertical in transformed space)</span>';
+      } else {
+        var nat = naturalize(r.raw, rel);
+        if(nat){
+          aTd.textContent = fmt(nat.a) + unitForA(rel);
+          bTd.textContent = fmt(nat.b) + unitForB(rel);
+          eqTd.textContent = rel.eq(nat.a, nat.b, xLabelIn.value.trim() || "x", yLabelIn.value.trim() || "y");
+        } else {
+          aTd.innerHTML = '<span class="muted">\u2014</span>';
+          bTd.innerHTML = '<span class="muted">\u2014</span>';
+          eqTd.innerHTML = '<span class="muted">' + (r.note || "\u2014") + '</span>';
+        }
+      }
+      tr.appendChild(aTd); tr.appendChild(bTd); tr.appendChild(eqTd);
+      compareBody.appendChild(tr);
+    });
+  }
+
+  function renderLegend(){
+    legendEl.innerHTML = "";
+    if(state.datasets.length < 2){ legendEl.style.display = "none"; return; }
+    legendEl.style.display = "flex";
+    state.datasets.forEach(function(ds, i){
+      var item = document.createElement("span");
+      item.className = "legend-item";
+      item.innerHTML = '<span class="swatch" style="background:'+ds.color+'"></span>' + (ds.label || ("Dataset "+(i+1)));
+      legendEl.appendChild(item);
+    });
+  }
+
+  function renderTable(){
+    var ds = activeDataset();
+    dataRowsEl.innerHTML = "";
+    ds.points.forEach(function(p, i){
+      var tr = document.createElement("tr");
+
+      var xTd = document.createElement("td");
+      var xInput = document.createElement("input");
+      xInput.type = "number"; xInput.step = "any"; xInput.value = p.x;
+      xInput.setAttribute("aria-label", "x value for point " + (i+1));
+      xInput.addEventListener("input", function(){
+        p.x = xInput.value === "" ? "" : parseFloat(xInput.value);
+        buildScales(); renderGraph();
+      });
+      xTd.appendChild(xInput); tr.appendChild(xTd);
+
+      var yTd = document.createElement("td");
+      var yInput = document.createElement("input");
+      yInput.type = "number"; yInput.step = "any"; yInput.value = p.y;
+      yInput.setAttribute("aria-label", "y value for point " + (i+1));
+      yInput.addEventListener("input", function(){
+        p.y = yInput.value === "" ? "" : parseFloat(yInput.value);
+        buildScales(); renderGraph();
+      });
+      yTd.appendChild(yInput); tr.appendChild(yTd);
+
+      var selTd = document.createElement("td");
+      var selBox = document.createElement("input");
+      selBox.type = "checkbox"; selBox.checked = !!p.sel;
+      selBox.setAttribute("aria-label", "Use point " + (i+1) + " for two-point method");
+      selBox.addEventListener("change", function(){
+        if(selBox.checked){
+          var selected = ds.points.filter(function(pt){return pt.sel;});
+          if(selected.length >= 2){ selected[0].sel = false; }
+          p.sel = true;
+        } else {
+          p.sel = false;
+        }
+        renderTable(); renderGraph();
+      });
+      selTd.appendChild(selBox); tr.appendChild(selTd);
+
+      var rmTd = document.createElement("td");
+      var rmBtn = document.createElement("button");
+      rmBtn.className = "small ghost"; rmBtn.textContent = "\u00D7";
+      rmBtn.setAttribute("aria-label", "Remove point " + (i+1));
+      rmBtn.disabled = ds.points.length <= 2;
+      rmBtn.addEventListener("click", function(){
+        ds.points.splice(i, 1);
+        renderTable(); buildScales(); renderGraph();
+      });
+      rmTd.appendChild(rmBtn); tr.appendChild(rmTd);
+
+      dataRowsEl.appendChild(tr);
+    });
+  }
+
+  function renderDatasetTabs(){
+    var wrap = document.getElementById("datasetTabs");
+    wrap.innerHTML = "";
+    state.datasets.forEach(function(ds, i){
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "small dataset-tab";
+      var isActive = i === state.activeIndex;
+      btn.style.borderColor = ds.color;
+      if(isActive){ btn.style.background = ds.color; btn.style.color = "#fff"; }
+      else { btn.style.color = ds.color; btn.style.background = "#fff"; }
+      btn.textContent = ds.label || ("Dataset " + (i+1));
+      btn.addEventListener("click", function(){
+        state.activeIndex = i;
+        fullRender();
+      });
+      wrap.appendChild(btn);
+    });
+
+    var ds = activeDataset();
+    document.getElementById("datasetLabel").value = ds.label || "";
+    document.getElementById("removeDatasetBtn").disabled = state.datasets.length <= 1;
+    document.getElementById("relationshipSelect").value = ds.relationship;
+    document.querySelectorAll(".method-switch button").forEach(function(b){
+      b.classList.toggle("active", b.dataset.method === ds.method);
+    });
+  }
+
+  function fullRender(){
+    buildScales();
+    renderDatasetTabs();
+    renderTable();
+    renderGraph();
+  }
+
+  document.getElementById("addRowBtn").addEventListener("click", function(){
+    activeDataset().points.push({x:"", y:"", sel:false});
+    renderTable();
+  });
+
+  document.getElementById("loadPasteBtn").addEventListener("click", function(){
+    var raw = document.getElementById("pasteArea").value;
+    var lines = raw.split("\n");
+    var parsed = [];
+    lines.forEach(function(line){
+      var parts = line.split(/[,\t ]+/).map(function(s){return s.trim();}).filter(function(s){return s.length;});
+      if(parts.length >= 2){
+        var x = parseFloat(parts[0]), y = parseFloat(parts[1]);
+        if(isFinite(x) && isFinite(y)) parsed.push({x:x, y:y, sel:false});
+      }
+    });
+    if(parsed.length < 2){
+      statusMsg.textContent = "Couldn't find at least 2 valid rows — check the format.";
+      return;
+    }
+    var ds = activeDataset();
+    ds.points = parsed;
+    ds.hand = null;
+    statusMsg.textContent = "Loaded " + parsed.length + " points into " + (ds.label || "this dataset") + ".";
+    buildScales(); renderTable(); renderGraph();
+  });
+
+  function applyTransform(col){
+    var key = document.getElementById("transformSelect").value;
+    var t = TRANSFORMS[key];
+    var ds = activeDataset();
+    var skipped = 0;
+    ds.points.forEach(function(p){
+      var v = p[col];
+      if(v === "" || !isFinite(v)) return;
+      var out = t.fn(v);
+      if(!isFinite(out)){ skipped++; p[col] = ""; }
+      else { p[col] = out; }
+    });
+    statusMsg.textContent = "Applied " + t.label + " to " + col.toUpperCase() +
+      (skipped ? (" — " + skipped + " value(s) were outside the domain and cleared.") : ".");
+    renderTable(); buildScales(); renderGraph();
+  }
+  document.getElementById("applyXBtn").addEventListener("click", function(){ applyTransform("x"); });
+  document.getElementById("applyYBtn").addEventListener("click", function(){ applyTransform("y"); });
+
+  document.getElementById("addDatasetBtn").addEventListener("click", function(){
+    var idx = state.datasets.length;
+    state.datasets.push(newDataset("Dataset " + (idx+1), COLORS[idx % COLORS.length]));
+    state.activeIndex = idx;
+    fullRender();
+  });
+  document.getElementById("removeDatasetBtn").addEventListener("click", function(){
+    if(state.datasets.length <= 1) return;
+    state.datasets.splice(state.activeIndex, 1);
+    state.activeIndex = Math.max(0, state.activeIndex - 1);
+    fullRender();
+  });
+  document.getElementById("datasetLabel").addEventListener("input", function(e){
+    var ds = activeDataset();
+    ds.label = e.target.value;
+    var tabs = document.querySelectorAll(".dataset-tab");
+    if(tabs[state.activeIndex]) tabs[state.activeIndex].textContent = ds.label || ("Dataset " + (state.activeIndex+1));
+    renderLegend();
+  });
+
+  document.getElementById("relationshipSelect").addEventListener("change", function(e){
+    var ds = activeDataset();
+    ds.relationship = e.target.value;
+    ds.hand = null;
+    buildScales(); renderTable(); renderGraph();
+  });
+
+  document.querySelectorAll(".method-switch button").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      activeDataset().method = btn.dataset.method;
+      document.querySelectorAll(".method-switch button").forEach(function(b){b.classList.remove("active");});
+      btn.classList.add("active");
+      renderTable(); renderGraph();
+    });
+  });
+
+  [xLabelIn, xUnitIn, yLabelIn, yUnitIn].forEach(function(el){
+    el.addEventListener("input", renderGraph);
+  });
+  function bindRange(input, key){
+    input.addEventListener("input", function(){
+      var v = input.value === "" ? null : parseFloat(input.value);
+      state.manual[key] = isFinite(v) ? v : null;
+      buildScales(); renderGraph();
+    });
+  }
+  bindRange(xMinIn, "xMin"); bindRange(xMaxIn, "xMax");
+  bindRange(yMinIn, "yMin"); bindRange(yMaxIn, "yMax");
+
+  document.getElementById("printBtn").addEventListener("click", function(){ window.print(); });
+
+  document.getElementById("resetBtn").addEventListener("click", function(){
+    state.datasets = [ newDataset("Dataset 1", COLORS[0], defaultPoints()) ];
+    state.activeIndex = 0;
+    state.manual = {xMin:null, xMax:null, yMin:null, yMax:null};
+    titleInput.value = "Lab Graph";
+    xLabelIn.value = "Time"; xUnitIn.value = "s";
+    yLabelIn.value = "Distance"; yUnitIn.value = "m";
+    xMinIn.value = ""; xMaxIn.value = ""; yMinIn.value = ""; yMaxIn.value = "";
+    document.getElementById("pasteArea").value = "";
+    statusMsg.textContent = "";
+    document.getElementById("saveLinkBox").hidden = true;
+    try{ history.replaceState(null, "", location.pathname + location.search); }catch(e){}
+    fullRender();
+  });
+
+  function serializeState(){
+    return {
+      title: titleInput.value,
+      xLabel: xLabelIn.value, xUnit: xUnitIn.value,
+      yLabel: yLabelIn.value, yUnit: yUnitIn.value,
+      manual: state.manual,
+      activeIndex: state.activeIndex,
+      datasets: state.datasets.map(function(ds){
+        return {
+          label: ds.label, color: ds.color, relationship: ds.relationship, method: ds.method,
+          points: ds.points.map(function(p){ return {x:p.x, y:p.y, sel:!!p.sel}; }),
+          hand: ds.hand
+        };
+      })
+    };
+  }
+  function applyLoadedState(obj){
+    titleInput.value = obj.title || "Lab Graph";
+    xLabelIn.value = obj.xLabel || ""; xUnitIn.value = obj.xUnit || "";
+    yLabelIn.value = obj.yLabel || ""; yUnitIn.value = obj.yUnit || "";
+    var m = obj.manual || {};
+    state.manual = {
+      xMin: isFinite(m.xMin) ? m.xMin : null, xMax: isFinite(m.xMax) ? m.xMax : null,
+      yMin: isFinite(m.yMin) ? m.yMin : null, yMax: isFinite(m.yMax) ? m.yMax : null
+    };
+    xMinIn.value = state.manual.xMin === null ? "" : state.manual.xMin;
+    xMaxIn.value = state.manual.xMax === null ? "" : state.manual.xMax;
+    yMinIn.value = state.manual.yMin === null ? "" : state.manual.yMin;
+    yMaxIn.value = state.manual.yMax === null ? "" : state.manual.yMax;
+
+    var loaded = (obj.datasets || []).map(function(d,i){ return newDatasetFromSaved(d,i); });
+    state.datasets = loaded.length ? loaded : [ newDataset("Dataset 1", COLORS[0], defaultPoints()) ];
+    state.activeIndex = Math.min(Math.max(0, obj.activeIndex || 0), state.datasets.length - 1);
+  }
+
+  function encodeState(obj){
+    var json = JSON.stringify(obj);
+    var b64 = btoa(unescape(encodeURIComponent(json)));
+    return b64.replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+  }
+  function decodeState(str){
+    var b64 = str.replace(/-/g,"+").replace(/_/g,"/");
+    while(b64.length % 4) b64 += "=";
+    var json = decodeURIComponent(escape(atob(b64)));
+    return JSON.parse(json);
+  }
+  function buildShareUrl(){
+    var encoded = encodeState(serializeState());
+    return location.origin + location.pathname + "#state=" + encoded;
+  }
+
+  document.getElementById("saveLinkBtn").addEventListener("click", function(){
+    var url = buildShareUrl();
+    document.getElementById("saveLinkInput").value = url;
+    document.getElementById("saveLinkBox").hidden = false;
+    try{
+      var hashPart = url.split("#state=")[1];
+      history.replaceState(null, "", "#state=" + hashPart);
+    }catch(e){}
+    document.getElementById("saveLinkInput").select();
+  });
+  document.getElementById("copyLinkBtn").addEventListener("click", function(){
+    var input = document.getElementById("saveLinkInput");
+    input.select();
+    var ok = false;
+    try{ navigator.clipboard.writeText(input.value); ok = true; }catch(e){}
+    if(!ok){
+      try{ document.execCommand("copy"); ok = true; }catch(e2){}
+    }
+    var status = document.getElementById("copyStatus");
+    status.textContent = ok ? " Copied!" : " Select the link and copy manually.";
+    setTimeout(function(){ status.textContent = ""; }, 2500);
+  });
+
+  function tryLoadFromHash(){
+    var h = location.hash;
+    if(h.indexOf("#state=") !== 0) return false;
+    var encoded = h.slice("#state=".length);
+    try{
+      var obj = decodeState(encoded);
+      applyLoadedState(obj);
+      return true;
+    }catch(e){
+      statusMsg.textContent = "Couldn't read the saved link — starting with default data.";
+      return false;
+    }
+  }
+
+  tryLoadFromHash();
+  fullRender();
+})();
+</script>
+</body>
+</html>
