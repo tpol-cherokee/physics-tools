@@ -599,16 +599,16 @@
     if(state.manual.xMin !== null && state.manual.xMax !== null){
       rx = {min: state.manual.xMin, max: state.manual.xMax, step: niceNum((state.manual.xMax-state.manual.xMin)/6, true)};
     } else {
-      var xMin = Math.min.apply(null, xs), xMax = Math.max.apply(null, xs);
-      var pad = (xMax - xMin) * 0.1 || 1;
-      rx = niceRange(xMin - pad, xMax + pad);
+      var xMax = Math.max.apply(null, xs);
+      var xSpan = xMax || 1;
+      rx = niceRange(0, xSpan);
     }
     if(state.manual.yMin !== null && state.manual.yMax !== null){
       ry = {min: state.manual.yMin, max: state.manual.yMax, step: niceNum((state.manual.yMax-state.manual.yMin)/6, true)};
     } else {
-      var yMin = Math.min.apply(null, ys), yMax = Math.max.apply(null, ys);
-      var pady = (yMax - yMin) * 0.1 || 1;
-      ry = niceRange(yMin - pady, yMax + pady);
+      var yMax = Math.max.apply(null, ys);
+      var ySpan = yMax || 1;
+      ry = niceRange(0, ySpan);
     }
     return {x: rx, y: ry};
   }
