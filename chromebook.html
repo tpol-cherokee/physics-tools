@@ -334,6 +334,8 @@
         </label>
         <button id="applyXBtn" class="small">Apply to X</button>
         <button id="applyYBtn" class="small">Apply to Y</button>
+        <button id="undoTransformBtn" class="small ghost" disabled>Undo transform</button>
+        <button id="resetTransformBtn" class="small ghost" disabled>Reset to original</button>
       </div>
 
       <details class="paste">
@@ -513,7 +515,8 @@
       relationship: "linear",
       method: "hand",
       points: points || [{x:"",y:"",sel:false},{x:"",y:"",sel:false}],
-      hand: null
+      hand: null,
+      transformHistory: []
     };
   }
   function newDatasetFromSaved(d, i){
@@ -524,7 +527,10 @@
       relationship: (d.relationship && RELATIONSHIPS[d.relationship]) ? d.relationship : "linear",
       method: (d.method === "two" || d.method === "lsq") ? d.method : "hand",
       points: (d.points || []).map(function(p){ return {x:p.x, y:p.y, sel:!!p.sel}; }),
-      hand: (d.hand && isFinite(d.hand.x1)) ? {x1:d.hand.x1,y1:d.hand.y1,x2:d.hand.x2,y2:d.hand.y2} : null
+      hand: (d.hand && isFinite(d.hand.x1)) ? {x1:d.hand.x1,y1:d.hand.y1,x2:d.hand.x2,y2:d.hand.y2} : null,
+      transformHistory: (d.transformHistory || []).map(function(snapshot){
+        return snapshot.map(function(p){ return {x:p.x, y:p.y, sel:!!p.sel}; });
+      })
     };
   }
   function activeDataset(){ return state.datasets[state.activeIndex]; }
@@ -985,6 +991,22 @@
     });
   }
 
+  function clonePoints(points){
+    return points.map(function(p){ return {x:p.x, y:p.y, sel:!!p.sel}; });
+  }
+
+  function clearTransformHistory(ds){
+    ds.transformHistory = [];
+    updateTransformButtons();
+  }
+
+  function updateTransformButtons(){
+    var ds = activeDataset();
+    var hasHistory = !!(ds && ds.transformHistory && ds.transformHistory.length);
+    document.getElementById("undoTransformBtn").disabled = !hasHistory;
+    document.getElementById("resetTransformBtn").disabled = !hasHistory;
+  }
+
   function renderTable(){
     var ds = activeDataset();
     dataRowsEl.innerHTML = "";
@@ -997,6 +1019,7 @@
       xInput.setAttribute("aria-label", "x value for point " + (i+1));
       xInput.addEventListener("input", function(){
         p.x = xInput.value === "" ? "" : parseFloat(xInput.value);
+        clearTransformHistory(ds);
         buildScales(); renderGraph();
       });
       xTd.appendChild(xInput); tr.appendChild(xTd);
@@ -1007,6 +1030,7 @@
       yInput.setAttribute("aria-label", "y value for point " + (i+1));
       yInput.addEventListener("input", function(){
         p.y = yInput.value === "" ? "" : parseFloat(yInput.value);
+        clearTransformHistory(ds);
         buildScales(); renderGraph();
       });
       yTd.appendChild(yInput); tr.appendChild(yTd);
@@ -1034,6 +1058,7 @@
       rmBtn.disabled = ds.points.length <= 2;
       rmBtn.addEventListener("click", function(){
         ds.points.splice(i, 1);
+        clearTransformHistory(ds);
         renderTable(); buildScales(); renderGraph();
       });
       rmTd.appendChild(rmBtn); tr.appendChild(rmTd);
@@ -1074,11 +1099,14 @@
     buildScales();
     renderDatasetTabs();
     renderTable();
+    updateTransformButtons();
     renderGraph();
   }
 
   document.getElementById("addRowBtn").addEventListener("click", function(){
-    activeDataset().points.push({x:"", y:"", sel:false});
+    var ds = activeDataset();
+    ds.points.push({x:"", y:"", sel:false});
+    clearTransformHistory(ds);
     renderTable();
   });
 
@@ -1100,6 +1128,7 @@
     var ds = activeDataset();
     ds.points = parsed;
     ds.hand = null;
+    clearTransformHistory(ds);
     statusMsg.textContent = "Loaded " + parsed.length + " points into " + (ds.label || "this dataset") + ".";
     buildScales(); renderTable(); renderGraph();
   });
@@ -1108,6 +1137,12 @@
     var key = document.getElementById("transformSelect").value;
     var t = TRANSFORMS[key];
     var ds = activeDataset();
+
+    // Save the current data before each transformation. This creates an undo
+    // history while keeping the student's originally entered data safe.
+    ds.transformHistory = ds.transformHistory || [];
+    ds.transformHistory.push(clonePoints(ds.points));
+
     var skipped = 0;
     ds.points.forEach(function(p){
       var v = p[col];
@@ -1117,11 +1152,39 @@
       else { p[col] = out; }
     });
     statusMsg.textContent = "Applied " + t.label + " to " + col.toUpperCase() +
-      (skipped ? (" — " + skipped + " value(s) were outside the domain and cleared.") : ".");
+      (skipped ? (" — " + skipped + " value(s) were outside the domain and cleared.") : ".") +
+      " You can undo this transformation.";
+    updateTransformButtons();
     renderTable(); buildScales(); renderGraph();
   }
+
+  function undoTransform(){
+    var ds = activeDataset();
+    if(!ds.transformHistory || !ds.transformHistory.length) return;
+    ds.points = ds.transformHistory.pop();
+    ds.hand = null;
+    statusMsg.textContent = ds.transformHistory.length
+      ? "Last transformation undone. You can undo another transformation."
+      : "Returned to the original data.";
+    updateTransformButtons();
+    renderTable(); buildScales(); renderGraph();
+  }
+
+  function resetToOriginal(){
+    var ds = activeDataset();
+    if(!ds.transformHistory || !ds.transformHistory.length) return;
+    ds.points = ds.transformHistory[0];
+    ds.transformHistory = [];
+    ds.hand = null;
+    statusMsg.textContent = "Returned to the original data.";
+    updateTransformButtons();
+    renderTable(); buildScales(); renderGraph();
+  }
+
   document.getElementById("applyXBtn").addEventListener("click", function(){ applyTransform("x"); });
   document.getElementById("applyYBtn").addEventListener("click", function(){ applyTransform("y"); });
+  document.getElementById("undoTransformBtn").addEventListener("click", undoTransform);
+  document.getElementById("resetTransformBtn").addEventListener("click", resetToOriginal);
 
   document.getElementById("addDatasetBtn").addEventListener("click", function(){
     var idx = state.datasets.length;
@@ -1200,7 +1263,8 @@
         return {
           label: ds.label, color: ds.color, relationship: ds.relationship, method: ds.method,
           points: ds.points.map(function(p){ return {x:p.x, y:p.y, sel:!!p.sel}; }),
-          hand: ds.hand
+          hand: ds.hand,
+          transformHistory: (ds.transformHistory || []).map(function(snapshot){ return clonePoints(snapshot); })
         };
       })
     };
