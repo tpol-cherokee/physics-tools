@@ -511,7 +511,19 @@
       points: (d.points || []).map(function(p){ return {x:p.x, y:p.y, sel:!!p.sel}; }),
       hand: (d.hand && isFinite(d.hand.x1)) ? {x1:d.hand.x1,y1:d.hand.y1,x2:d.hand.x2,y2:d.hand.y2} : null,
       transformHistory: (d.transformHistory || []).map(function(snapshot){
-        return snapshot.map(function(p){ return {x:p.x, y:p.y, sel:!!p.sel}; });
+        // New format stores both data and axis-label state. Older saved links
+        // may contain point arrays only, so preserve compatibility with them.
+        if(Array.isArray(snapshot)) return {
+          points: clonePoints(snapshot),
+          labels: null
+        };
+        return {
+          points: clonePoints(snapshot.points || []),
+          labels: snapshot.labels ? {
+            xLabel: snapshot.labels.xLabel || "", xUnit: snapshot.labels.xUnit || "",
+            yLabel: snapshot.labels.yLabel || "", yUnit: snapshot.labels.yUnit || ""
+          } : null
+        };
       })
     };
   }
@@ -601,21 +613,28 @@
     }
     if(xs.length === 0){ xs = [0,1]; ys = [0,1]; }
 
-    var rx, ry;
-    if(state.manual.xMin !== null && state.manual.xMax !== null){
-      rx = {min: state.manual.xMin, max: state.manual.xMax, step: niceNum((state.manual.xMax-state.manual.xMin)/6, true)};
-    } else {
-      var xMax = Math.max.apply(null, xs);
-      var xSpan = xMax || 1;
-      rx = niceRange(0, xSpan);
+    var xMaxData = Math.max.apply(null, xs);
+    var yMaxData = Math.max.apply(null, ys);
+    var rxAuto = niceRange(0, xMaxData || 1);
+    var ryAuto = niceRange(0, yMaxData || 1);
+
+    // A manual range is now allowed to specify either endpoint. The missing
+    // endpoint continues to be determined automatically from the data.
+    var xMin = state.manual.xMin !== null ? state.manual.xMin : rxAuto.min;
+    var xMax = state.manual.xMax !== null ? state.manual.xMax : rxAuto.max;
+    if(xMin >= xMax){
+      if(state.manual.xMax !== null && state.manual.xMin === null) xMin = Math.min(rxAuto.min, xMax - 1);
+      else xMax = Math.max(rxAuto.max, xMin + 1);
     }
-    if(state.manual.yMin !== null && state.manual.yMax !== null){
-      ry = {min: state.manual.yMin, max: state.manual.yMax, step: niceNum((state.manual.yMax-state.manual.yMin)/6, true)};
-    } else {
-      var yMax = Math.max.apply(null, ys);
-      var ySpan = yMax || 1;
-      ry = niceRange(0, ySpan);
+    var yMin = state.manual.yMin !== null ? state.manual.yMin : ryAuto.min;
+    var yMax = state.manual.yMax !== null ? state.manual.yMax : ryAuto.max;
+    if(yMin >= yMax){
+      if(state.manual.yMax !== null && state.manual.yMin === null) yMin = Math.min(ryAuto.min, yMax - 1);
+      else yMax = Math.max(ryAuto.max, yMin + 1);
     }
+
+    var rx = {min:xMin, max:xMax, step:niceNum((xMax-xMin)/6, true)};
+    var ry = {min:yMin, max:yMax, step:niceNum((yMax-yMin)/6, true)};
     return {x: rx, y: ry};
   }
 
@@ -1115,15 +1134,36 @@
     buildScales(); renderTable(); renderGraph();
   });
 
+  function transformAxisText(label, unit, key){
+    // Keep the axis wording student-friendly while showing the mathematical
+    // transformation that has been applied to that variable.
+    if(key === "square") return {label: label ? label + "²" : "x²", unit: unit ? unit + "²" : ""};
+    if(key === "cube") return {label: label ? label + "³" : "x³", unit: unit ? unit + "³" : ""};
+    if(key === "sqrt") return {label: label ? "√" + label : "√x", unit: unit ? "√" + unit : ""};
+    if(key === "inverse") return {label: label ? "1/" + label : "1/x", unit: unit ? "1/" + unit : ""};
+    return {label:label, unit:unit};
+  }
+
+  function currentAxisLabels(){
+    return {xLabel:xLabelIn.value, xUnit:xUnitIn.value, yLabel:yLabelIn.value, yUnit:yUnitIn.value};
+  }
+
+  function restoreAxisLabels(labels){
+    if(!labels) return;
+    xLabelIn.value = labels.xLabel; xUnitIn.value = labels.xUnit;
+    yLabelIn.value = labels.yLabel; yUnitIn.value = labels.yUnit;
+  }
+
   function applyTransform(col){
     var key = document.getElementById("transformSelect").value;
     var t = TRANSFORMS[key];
     var ds = activeDataset();
 
-    // Save the current data before each transformation. This creates an undo
-    // history while keeping the student's originally entered data safe.
+    // Save both the data and the axis-label state before each transformation.
+    // This makes Undo and Reset restore exactly what the student saw before
+    // the transformation, while preserving the original entered data safely.
     ds.transformHistory = ds.transformHistory || [];
-    ds.transformHistory.push(clonePoints(ds.points));
+    ds.transformHistory.push({points:clonePoints(ds.points), labels:currentAxisLabels()});
 
     var skipped = 0;
     ds.points.forEach(function(p){
@@ -1133,6 +1173,15 @@
       if(!isFinite(out)){ skipped++; p[col] = ""; }
       else { p[col] = out; }
     });
+
+    var changed = transformAxisText(
+      col === "x" ? xLabelIn.value : yLabelIn.value,
+      col === "x" ? xUnitIn.value : yUnitIn.value,
+      key
+    );
+    if(col === "x"){ xLabelIn.value = changed.label; xUnitIn.value = changed.unit; }
+    else { yLabelIn.value = changed.label; yUnitIn.value = changed.unit; }
+
     statusMsg.textContent = "Applied " + t.label + " to " + col.toUpperCase() +
       (skipped ? (" — " + skipped + " value(s) were outside the domain and cleared.") : ".") +
       " You can undo this transformation.";
@@ -1143,7 +1192,9 @@
   function undoTransform(){
     var ds = activeDataset();
     if(!ds.transformHistory || !ds.transformHistory.length) return;
-    ds.points = ds.transformHistory.pop();
+    var snapshot = ds.transformHistory.pop();
+    ds.points = snapshot.points || clonePoints(snapshot);
+    restoreAxisLabels(snapshot.labels);
     ds.hand = null;
     statusMsg.textContent = ds.transformHistory.length
       ? "Last transformation undone. You can undo another transformation."
@@ -1155,7 +1206,9 @@
   function resetToOriginal(){
     var ds = activeDataset();
     if(!ds.transformHistory || !ds.transformHistory.length) return;
-    ds.points = ds.transformHistory[0];
+    var first = ds.transformHistory[0];
+    ds.points = first.points || clonePoints(first);
+    if(first.labels) restoreAxisLabels(first.labels);
     ds.transformHistory = [];
     ds.hand = null;
     statusMsg.textContent = "Returned to the original data.";
@@ -1246,7 +1299,15 @@
           label: ds.label, color: ds.color, relationship: ds.relationship, method: ds.method,
           points: ds.points.map(function(p){ return {x:p.x, y:p.y, sel:!!p.sel}; }),
           hand: ds.hand,
-          transformHistory: (ds.transformHistory || []).map(function(snapshot){ return clonePoints(snapshot); })
+          transformHistory: (ds.transformHistory || []).map(function(snapshot){
+            return {
+              points: clonePoints(snapshot.points || snapshot),
+              labels: snapshot.labels ? {
+                xLabel:snapshot.labels.xLabel, xUnit:snapshot.labels.xUnit,
+                yLabel:snapshot.labels.yLabel, yUnit:snapshot.labels.yUnit
+              } : null
+            };
+          })
         };
       })
     };
