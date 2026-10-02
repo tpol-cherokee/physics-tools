@@ -320,6 +320,7 @@
       </table>
       <div class="row-actions">
         <button id="addRowBtn" class="small">+ Add point</button>
+        <button id="swapXYBtn" class="small ghost" title="Exchange all x and y data">Swap X ↔ Y</button>
       </div>
       <div class="status-msg" id="statusMsg"></div>
 
@@ -1152,6 +1153,41 @@
     buildScales(); renderTable(); renderGraph();
   });
 
+  function swapXY(){
+    var ds = activeDataset();
+
+    // Exchange the actual x/y values for this dataset. This is intentionally
+    // treated like a manual data correction, so old transform history is
+    // cleared rather than allowing Undo to put the mistaken columns back.
+    ds.points.forEach(function(p){
+      var temp = p.x;
+      p.x = p.y;
+      p.y = temp;
+    });
+
+    // Keep the rest of the graph consistent with the swapped variables.
+    var label = xLabelIn.value; xLabelIn.value = yLabelIn.value; yLabelIn.value = label;
+    var unit = xUnitIn.value; xUnitIn.value = yUnitIn.value; yUnitIn.value = unit;
+
+    var min = document.getElementById("xMinIn").value;
+    var max = document.getElementById("xMaxIn").value;
+    document.getElementById("xMinIn").value = document.getElementById("yMinIn").value;
+    document.getElementById("xMaxIn").value = document.getElementById("yMaxIn").value;
+    document.getElementById("yMinIn").value = min;
+    document.getElementById("yMaxIn").value = max;
+
+    // Swap the selected two-point coordinates as well, if present.
+    if(ds.hand){
+      var hx = ds.hand.x1; ds.hand.x1 = ds.hand.y1; ds.hand.y1 = hx;
+      hx = ds.hand.x2; ds.hand.x2 = ds.hand.y2; ds.hand.y2 = hx;
+    }
+
+    clearTransformHistory(ds);
+    statusMsg.textContent = "Swapped the X and Y data, labels, units, and axis ranges.";
+    updateTransformButtons();
+    renderTable(); buildScales(); renderGraph();
+  }
+
   function transformAxisText(label, unit, key){
     // Keep the axis wording student-friendly while showing the mathematical
     // transformation that has been applied to that variable.
@@ -1234,6 +1270,7 @@
     renderTable(); buildScales(); renderGraph();
   }
 
+  document.getElementById("swapXYBtn").addEventListener("click", swapXY);
   document.getElementById("applyXBtn").addEventListener("click", function(){ applyTransform("x"); });
   document.getElementById("applyYBtn").addEventListener("click", function(){ applyTransform("y"); });
   document.getElementById("undoTransformBtn").addEventListener("click", undoTransform);
