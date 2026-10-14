@@ -266,7 +266,9 @@
   <input id="titleInput" class="title-input" value="Lab Graph" aria-label="Graph title">
   <div class="toolbar">
     <button id="saveLinkBtn" class="ghost">Save link</button>
-    <button id="printBtn" class="ghost">Print</button>
+    <button id="exportPngBtn" class="ghost">Export PNG</button>
+    <button id="exportJpgBtn" class="ghost">Export JPG</button>
+    <button id="exportPdfBtn" class="ghost">Export PDF</button>
     <button id="resetBtn" class="ghost">Reset</button>
   </div>
 </header>
@@ -795,6 +797,10 @@
     defs.appendChild(clip);
     svg.appendChild(defs);
 
+    var graphTitle = svgEl("text", {x:350, y:25, "text-anchor":"middle", "font-size":"20", "font-weight":"700", "font-family":"Source Serif 4, Georgia, serif", fill:"#1B2A4A"});
+    graphTitle.textContent = titleInput.value.trim() || "Lab Graph";
+    svg.appendChild(graphTitle);
+
     var xTicks = ticksFor(scales.xMin, scales.xMax, scales.xStep);
     var yTicks = ticksFor(scales.yMin, scales.yMax, scales.yStep);
 
@@ -1307,7 +1313,49 @@
   bindRange(xMinIn, "xMin"); bindRange(xMaxIn, "xMax");
   bindRange(yMinIn, "yMin"); bindRange(yMaxIn, "yMax");
 
-  document.getElementById("printBtn").addEventListener("click", function(){ window.print(); });
+  titleInput.addEventListener("input", renderGraph);
+
+  function exportGraphImage(format){
+    renderGraph();
+    var sourceSvg = svg.cloneNode(true);
+    sourceSvg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    sourceSvg.setAttribute("width", "1400");
+    sourceSvg.setAttribute("height", "920");
+    var serialized = new XMLSerializer().serializeToString(sourceSvg);
+    var svgBlob = new Blob([serialized], {type:"image/svg+xml;charset=utf-8"});
+    var url = URL.createObjectURL(svgBlob);
+    var img = new Image();
+    img.onload = function(){
+      var canvas = document.createElement("canvas");
+      canvas.width = 1400; canvas.height = 1120;
+      var ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#ffffff"; ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.drawImage(img,0,0,1400,920);
+      ctx.fillStyle = "#1B2A4A"; ctx.font = "bold 24px Georgia, serif";
+      ctx.fillText("Trendline equations", 55, 965);
+      ctx.fillStyle = "#22262C"; ctx.font = "18px Arial, sans-serif";
+      var rows = Array.from(compareBody.querySelectorAll("tr"));
+      rows.forEach(function(row, i){
+        var cells = row.querySelectorAll("td");
+        var equation = cells.length > 3 ? cells[3].textContent.trim() : "";
+        ctx.fillText((cells[0] ? cells[0].textContent.trim() : "Fit") + ": " + equation, 55, 1005 + i*32, 1280);
+      });
+      var mime = format === "jpg" ? "image/jpeg" : "image/png";
+      var ext = format === "jpg" ? "jpg" : "png";
+      canvas.toBlob(function(blob){
+        if(!blob){ statusMsg.textContent = "Export failed. Please try again."; URL.revokeObjectURL(url); return; }
+        var link = document.createElement("a"); link.href = URL.createObjectURL(blob);
+        link.download = (titleInput.value.trim() || "Lab Graph").replace(/[^a-z0-9_-]+/gi,"_") + "." + ext;
+        document.body.appendChild(link); link.click(); link.remove();
+        setTimeout(function(){URL.revokeObjectURL(url); URL.revokeObjectURL(link.href);},1000);
+      }, mime, format === "jpg" ? 0.94 : undefined);
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); statusMsg.textContent = "Could not create image. Please use Export PDF instead."; };
+    img.src = url;
+  }
+  document.getElementById("exportPngBtn").addEventListener("click", function(){ exportGraphImage("png"); });
+  document.getElementById("exportJpgBtn").addEventListener("click", function(){ exportGraphImage("jpg"); });
+  document.getElementById("exportPdfBtn").addEventListener("click", function(){ window.print(); });
 
   document.getElementById("resetBtn").addEventListener("click", function(){
     state.datasets = [ newDataset("Dataset 1", COLORS[0], defaultPoints()) ];
