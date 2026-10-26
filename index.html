@@ -213,8 +213,24 @@
     font-family:"Source Serif 4",serif; font-size:0.82rem; border:1px solid var(--rule);
     border-radius:2px; padding:3px 4px; background:var(--paper); color:var(--text);
   }
-  .range-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
-  .range-grid input{font-family:"IBM Plex Mono",monospace; font-size:0.82rem;}
+  .range-grid{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:4px 6px;
+    max-width:100%;
+  }
+  .range-grid input{
+    display:block;
+    width:100%;
+    min-width:0;
+    box-sizing:border-box;
+    padding:3px 5px;
+    font-family:"IBM Plex Mono",monospace;
+    font-size:0.72rem;
+    line-height:1.2;
+  }
+  fieldset.axis-fields:has(.range-grid){margin-top:10px;}
+  fieldset.axis-fields:has(.range-grid) legend{font-size:0.72rem; padding-bottom:4px;}
 
   .fit-controls{margin-bottom:14px;}
   .fit-controls .rel-row{margin-bottom:10px;}
@@ -986,7 +1002,7 @@
         if(nat){
           aTd.textContent = fmt(nat.a) + unitForA(rel);
           bTd.textContent = fmt(nat.b) + unitForB(rel);
-          eqTd.textContent = rel.eq(nat.a, nat.b, xLabelIn.value.trim() || "x", yLabelIn.value.trim() || "y");
+          eqTd.textContent = rel.eq(nat.a, nat.b, xVariableIn.value.trim() || "x", yVariableIn.value.trim() || "y");
         } else {
           aTd.innerHTML = '<span class="muted">\u2014</span>';
           bTd.innerHTML = '<span class="muted">\u2014</span>';
