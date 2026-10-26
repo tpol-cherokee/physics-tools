@@ -203,14 +203,15 @@
     font-family:"IBM Plex Mono",monospace; font-size:0.78rem; text-transform:uppercase;
     letter-spacing:0.08em; color:var(--text-muted); padding:0 0 6px;
   }
-  .field-row{display:flex; gap:8px; margin-bottom:8px;}
+  .field-row{display:flex; gap:5px; margin-bottom:7px;}
   .field-row label{
-    display:flex; flex-direction:column; gap:3px; font-size:0.74rem; color:var(--text-muted); flex:1;
+    display:flex; flex-direction:column; gap:2px; font-size:0.68rem; color:var(--text-muted); flex:1; min-width:0;
     font-family:"IBM Plex Mono",monospace;
   }
   .field-row input{
-    font-family:"Source Serif 4",serif; font-size:0.92rem; border:1px solid var(--rule);
-    border-radius:2px; padding:5px 7px; background:var(--paper); color:var(--text);
+    width:100%; min-width:0; box-sizing:border-box;
+    font-family:"Source Serif 4",serif; font-size:0.82rem; border:1px solid var(--rule);
+    border-radius:2px; padding:3px 4px; background:var(--paper); color:var(--text);
   }
   .range-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
   .range-grid input{font-family:"IBM Plex Mono",monospace; font-size:0.82rem;}
@@ -352,10 +353,12 @@
         <legend>Axis labels (whole graph)</legend>
         <div class="field-row">
           <label>X label <input id="xLabel" type="text" value="Time"></label>
+          <label>X variable <input id="xVariable" type="text" value="t"></label>
           <label>X unit <input id="xUnit" type="text" value="s"></label>
         </div>
         <div class="field-row">
           <label>Y label <input id="yLabel" type="text" value="Distance"></label>
+          <label>Y variable <input id="yVariable" type="text" value="d"></label>
           <label>Y unit <input id="yUnit" type="text" value="m"></label>
         </div>
       </fieldset>
@@ -541,8 +544,8 @@
         return {
           points: clonePoints(snapshot.points || []),
           labels: snapshot.labels ? {
-            xLabel: snapshot.labels.xLabel || "", xUnit: snapshot.labels.xUnit || "",
-            yLabel: snapshot.labels.yLabel || "", yUnit: snapshot.labels.yUnit || ""
+            xLabel: snapshot.labels.xLabel || "", xVariable: snapshot.labels.xVariable || "", xUnit: snapshot.labels.xUnit || "",
+            yLabel: snapshot.labels.yLabel || "", yVariable: snapshot.labels.yVariable || "", yUnit: snapshot.labels.yUnit || ""
           } : null
         };
       })
@@ -562,8 +565,10 @@
 
   var titleInput = document.getElementById("titleInput");
   var xLabelIn = document.getElementById("xLabel");
+  var xVariableIn = document.getElementById("xVariable");
   var xUnitIn = document.getElementById("xUnit");
   var yLabelIn = document.getElementById("yLabel");
+  var yVariableIn = document.getElementById("yVariable");
   var yUnitIn = document.getElementById("yUnit");
   var xMinIn = document.getElementById("xMinIn");
   var xMaxIn = document.getElementById("xMaxIn");
@@ -862,14 +867,20 @@
 
     svg.appendChild(svgEl("rect", {x:scales.left,y:scales.top,width:scales.plotW,height:scales.plotH,fill:"none",stroke:"var(--ink-soft)","stroke-width":1.3}));
 
+    function formatAxisLabel(label, variable, unit){
+      var parts = [];
+      var l = label.trim(), v = variable.trim(), u = unit.trim();
+      if(l) parts.push(l);
+      if(v) parts.push("[" + v + "]");
+      if(u) parts.push("(" + u + ")");
+      return parts.join(" ");
+    }
     var xAxisLabel = svgEl("text", {x: scales.left + scales.plotW/2, y: scales.height - 10, "text-anchor":"middle","font-size":"13","font-family":"Source Serif 4, serif",fill:"var(--ink)"});
-    var xu = xUnitIn.value.trim();
-    xAxisLabel.textContent = xLabelIn.value.trim() + (xu ? " (" + xu + ")" : "");
+    xAxisLabel.textContent = formatAxisLabel(xLabelIn.value, xVariableIn.value, xUnitIn.value);
     svg.appendChild(xAxisLabel);
 
     var yAxisLabel = svgEl("text", {x: 16, y: scales.top + scales.plotH/2, "text-anchor":"middle","font-size":"13","font-family":"Source Serif 4, serif",fill:"var(--ink)", transform:"rotate(-90 16 " + (scales.top + scales.plotH/2) + ")"});
-    var yu = yUnitIn.value.trim();
-    yAxisLabel.textContent = yLabelIn.value.trim() + (yu ? " (" + yu + ")" : "");
+    yAxisLabel.textContent = formatAxisLabel(yLabelIn.value, yVariableIn.value, yUnitIn.value);
     svg.appendChild(yAxisLabel);
 
     state.datasets.forEach(function(ds, dsIndex){
@@ -1173,6 +1184,7 @@
 
     // Keep the rest of the graph consistent with the swapped variables.
     var label = xLabelIn.value; xLabelIn.value = yLabelIn.value; yLabelIn.value = label;
+    var variable = xVariableIn.value; xVariableIn.value = yVariableIn.value; yVariableIn.value = variable;
     var unit = xUnitIn.value; xUnitIn.value = yUnitIn.value; yUnitIn.value = unit;
 
     var min = document.getElementById("xMinIn").value;
@@ -1194,24 +1206,25 @@
     renderTable(); buildScales(); renderGraph();
   }
 
-  function transformAxisText(label, unit, key){
-    // Keep the axis wording student-friendly while showing the mathematical
-    // transformation that has been applied to that variable.
-    if(key === "square") return {label: label ? label + "²" : "x²", unit: unit ? unit + "²" : ""};
-    if(key === "cube") return {label: label ? label + "³" : "x³", unit: unit ? unit + "³" : ""};
-    if(key === "sqrt") return {label: label ? "√" + label : "√x", unit: unit ? "√" + unit : ""};
-    if(key === "inverse") return {label: label ? "1/" + label : "1/x", unit: unit ? "1/" + unit : ""};
-    return {label:label, unit:unit};
+  function transformAxisText(text, key, fallback){
+    var value = (text || "").trim();
+    if(!value) return "";
+    if(key === "square") return value + "²";
+    if(key === "cube") return value + "³";
+    if(key === "sqrt") return "√" + value;
+    if(key === "inverse") return "1/" + value;
+    return text;
   }
 
   function currentAxisLabels(){
-    return {xLabel:xLabelIn.value, xUnit:xUnitIn.value, yLabel:yLabelIn.value, yUnit:yUnitIn.value};
+    return {xLabel:xLabelIn.value, xVariable:xVariableIn.value, xUnit:xUnitIn.value,
+      yLabel:yLabelIn.value, yVariable:yVariableIn.value, yUnit:yUnitIn.value};
   }
 
   function restoreAxisLabels(labels){
     if(!labels) return;
-    xLabelIn.value = labels.xLabel; xUnitIn.value = labels.xUnit;
-    yLabelIn.value = labels.yLabel; yUnitIn.value = labels.yUnit;
+    xLabelIn.value = labels.xLabel || ""; xVariableIn.value = labels.xVariable || ""; xUnitIn.value = labels.xUnit || "";
+    yLabelIn.value = labels.yLabel || ""; yVariableIn.value = labels.yVariable || ""; yUnitIn.value = labels.yUnit || "";
   }
 
   function applyTransform(col){
@@ -1234,13 +1247,12 @@
       else { p[col] = out; }
     });
 
-    var changed = transformAxisText(
-      col === "x" ? xLabelIn.value : yLabelIn.value,
-      col === "x" ? xUnitIn.value : yUnitIn.value,
-      key
-    );
-    if(col === "x"){ xLabelIn.value = changed.label; xUnitIn.value = changed.unit; }
-    else { yLabelIn.value = changed.label; yUnitIn.value = changed.unit; }
+    var labelInput = col === "x" ? xLabelIn : yLabelIn;
+    var variableInput = col === "x" ? xVariableIn : yVariableIn;
+    var unitInput = col === "x" ? xUnitIn : yUnitIn;
+    labelInput.value = transformAxisText(labelInput.value, key, col);
+    variableInput.value = transformAxisText(variableInput.value, key, col);
+    unitInput.value = transformAxisText(unitInput.value, key, "");
 
     statusMsg.textContent = "Applied " + t.label + " to " + col.toUpperCase() +
       (skipped ? (" — " + skipped + " value(s) were outside the domain and cleared.") : ".") +
@@ -1318,7 +1330,7 @@
     });
   });
 
-  [xLabelIn, xUnitIn, yLabelIn, yUnitIn].forEach(function(el){
+  [xLabelIn, xVariableIn, xUnitIn, yLabelIn, yVariableIn, yUnitIn].forEach(function(el){
     el.addEventListener("input", renderGraph);
   });
   function bindRange(input, key){
@@ -1398,8 +1410,8 @@
     state.activeIndex = 0;
     state.manual = {xMin:null, xMax:null, yMin:null, yMax:null};
     titleInput.value = "Lab Graph";
-    xLabelIn.value = "Time"; xUnitIn.value = "s";
-    yLabelIn.value = "Distance"; yUnitIn.value = "m";
+    xLabelIn.value = "Time"; xVariableIn.value = "t"; xUnitIn.value = "s";
+    yLabelIn.value = "Distance"; yVariableIn.value = "d"; yUnitIn.value = "m";
     xMinIn.value = ""; xMaxIn.value = ""; yMinIn.value = ""; yMaxIn.value = "";
     document.getElementById("pasteArea").value = "";
     statusMsg.textContent = "";
@@ -1411,8 +1423,8 @@
   function serializeState(){
     return {
       title: titleInput.value,
-      xLabel: xLabelIn.value, xUnit: xUnitIn.value,
-      yLabel: yLabelIn.value, yUnit: yUnitIn.value,
+      xLabel: xLabelIn.value, xVariable: xVariableIn.value, xUnit: xUnitIn.value,
+      yLabel: yLabelIn.value, yVariable: yVariableIn.value, yUnit: yUnitIn.value,
       manual: state.manual,
       activeIndex: state.activeIndex,
       datasets: state.datasets.map(function(ds){
@@ -1424,8 +1436,8 @@
             return {
               points: clonePoints(snapshot.points || snapshot),
               labels: snapshot.labels ? {
-                xLabel:snapshot.labels.xLabel, xUnit:snapshot.labels.xUnit,
-                yLabel:snapshot.labels.yLabel, yUnit:snapshot.labels.yUnit
+                xLabel:snapshot.labels.xLabel, xVariable:snapshot.labels.xVariable, xUnit:snapshot.labels.xUnit,
+                yLabel:snapshot.labels.yLabel, yVariable:snapshot.labels.yVariable, yUnit:snapshot.labels.yUnit
               } : null
             };
           })
@@ -1435,8 +1447,12 @@
   }
   function applyLoadedState(obj){
     titleInput.value = obj.title || "Lab Graph";
-    xLabelIn.value = obj.xLabel || ""; xUnitIn.value = obj.xUnit || "";
-    yLabelIn.value = obj.yLabel || ""; yUnitIn.value = obj.yUnit || "";
+    xLabelIn.value = obj.xLabel !== undefined ? obj.xLabel : "Time";
+    xVariableIn.value = obj.xVariable !== undefined ? obj.xVariable : "t";
+    xUnitIn.value = obj.xUnit !== undefined ? obj.xUnit : "s";
+    yLabelIn.value = obj.yLabel !== undefined ? obj.yLabel : "Distance";
+    yVariableIn.value = obj.yVariable !== undefined ? obj.yVariable : "d";
+    yUnitIn.value = obj.yUnit !== undefined ? obj.yUnit : "m";
     var m = obj.manual || {};
     state.manual = {
       xMin: isFinite(m.xMin) ? m.xMin : null, xMax: isFinite(m.xMax) ? m.xMax : null,
