@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Projectile Motion Lab: AP Physics 1</title>
+<style>
+:root{
+  --bg:#f6f7f9; --card:#ffffff; --ink:#15181f; --quiet:#566070; --line:#ccd2dc;
+  --accent:#1f3a93; --accent-ink:#ffffff; --accent-soft:#e8ecfa;
+  --good:#17703a; --good-soft:#e4f4ea; --bad:#a8231b; --bad-soft:#fbe9e7; --warn-soft:#fff4d6;
+  --sim-bg:#f1f5fb; --terrain:#d5dae3; --terrain-line:#9aa3b2;
+  --c-x:#1b66c9; --c-y:#bf5200; --c-v:#15181f; --path:#1f3a93; --muted-path:#8b95a7;
+  color-scheme: light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1218; --card:#171b23; --ink:#e8ebf1; --quiet:#a3abbb; --line:#2f3644;
+    --accent:#8aa4ff; --accent-ink:#0b1020; --accent-soft:#1d2540;
+    --good:#62d08c; --good-soft:#15291d; --bad:#ff8f86; --bad-soft:#331a18; --warn-soft:#332a10;
+    --sim-bg:#0e1520; --terrain:#2a3140; --terrain-line:#566074;
+    --c-x:#74b4ff; --c-y:#ffa660; --c-v:#e8ebf1; --path:#8aa4ff; --muted-path:#6d788c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1218; --card:#171b23; --ink:#e8ebf1; --quiet:#a3abbb; --line:#2f3644;
+  --accent:#8aa4ff; --accent-ink:#0b1020; --accent-soft:#1d2540;
+  --good:#62d08c; --good-soft:#15291d; --bad:#ff8f86; --bad-soft:#331a18; --warn-soft:#332a10;
+  --sim-bg:#0e1520; --terrain:#2a3140; --terrain-line:#566074;
+  --c-x:#74b4ff; --c-y:#ffa660; --c-v:#e8ebf1; --path:#8aa4ff; --muted-path:#6d788c;
+  color-scheme: dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+*,*::before,*::after{box-sizing:inherit;}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 -apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;}
+.wrap{max-width:1120px;margin:0 auto;padding:18px 16px 48px;}
+h1{font-size:1.6rem;line-height:1.2;margin:0 0 4px;color:var(--accent);}
+h2{font-size:1.15rem;margin:0 0 10px;}
+h3{font-size:1rem;margin:0 0 8px;}
+.sub{color:var(--quiet);margin:0 0 14px;max-width:70ch;}
+sub{font-size:.72em;line-height:0;}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;border-bottom:2px solid var(--line);margin:0 0 16px;}
+.tab{appearance:none;background:none;border:0;border-bottom:3px solid transparent;margin-bottom:-2px;padding:10px 14px;font:inherit;font-weight:600;color:var(--quiet);cursor:pointer;}
+.tab[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent);}
+.tab:focus-visible,.btn:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,.opt:focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;}
+.grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:16px;align-items:start;}
+@media (max-width:880px){.grid{grid-template-columns:minmax(0,1fr);}}
+.stack{display:flex;flex-direction:column;gap:16px;}
+.canvas-wrap{background:var(--sim-bg);border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+canvas{display:block;width:100%;}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.btn{appearance:none;font:inherit;font-weight:600;border:1.5px solid var(--accent);background:var(--card);color:var(--accent);border-radius:8px;padding:8px 14px;cursor:pointer;min-height:40px;}
+.btn.primary{background:var(--accent);color:var(--accent-ink);}
+.btn:disabled{opacity:.45;cursor:not-allowed;}
+.btn.small{padding:5px 10px;min-height:32px;font-size:.9rem;}
+.playbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:10px;}
+.playbar input[type=range]{flex:1 1 180px;}
+label.inl{display:flex;gap:6px;align-items:center;font-size:.92rem;color:var(--quiet);}
+.ctl{margin:0 0 12px;}
+.ctl .top{display:flex;justify-content:space-between;gap:8px;font-weight:600;}
+.ctl output{font-variant-numeric:tabular-nums;color:var(--accent);}
+input[type=range]{width:100%;accent-color:var(--accent);}
+.badge{display:block;background:var(--accent-soft);color:var(--ink);border-left:5px solid var(--accent);padding:10px 12px;border-radius:6px;margin:0 0 12px;}
+.badge b{display:block;}
+table.vals{width:100%;border-collapse:collapse;font-size:.95rem;}
+table.vals th,table.vals td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:left;}
+table.vals td:last-child{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;}
+table.vals th{font-weight:600;color:var(--quiet);font-size:.85rem;}
+.note{padding:10px 12px;border-radius:6px;background:var(--warn-soft);margin-top:10px;}
+.note:empty{display:none;}
+details{margin-top:12px;}
+summary{cursor:pointer;font-weight:600;color:var(--accent);}
+ol.steps{padding-left:22px;margin:8px 0 0;}
+ol.steps li{margin:0 0 8px;}
+.problem{font-size:1.05rem;margin:0 0 10px;}
+.fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px 14px;margin:12px 0;}
+.field label{display:block;font-weight:600;margin-bottom:3px;}
+.field .u{color:var(--quiet);font-weight:400;font-size:.88rem;}
+.field input[type=number]{width:100%;font:inherit;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);}
+.field .st{display:block;font-size:.88rem;min-height:1.3em;margin-top:2px;}
+.field.ok input{border-color:var(--good);background:var(--good-soft);}
+.field.bad input{border-color:var(--bad);background:var(--bad-soft);}
+.field.ok .st{color:var(--good);}
+.field.bad .st{color:var(--bad);}
+.mc{margin:6px 0 4px;}
+.mc label{margin-right:14px;font-weight:400;}
+.msg{padding:10px 12px;border-radius:6px;margin:10px 0;background:var(--accent-soft);}
+.msg.good{background:var(--good-soft);}
+.msg.bad{background:var(--bad-soft);}
+.opts{display:grid;gap:8px;margin:12px 0;}
+.opt{text-align:left;font:inherit;border:1.5px solid var(--line);background:var(--card);color:var(--ink);padding:10px 12px;border-radius:8px;cursor:pointer;}
+.opt:hover:not(:disabled){border-color:var(--accent);}
+.opt.ok{border-color:var(--good);background:var(--good-soft);}
+.opt.bad{border-color:var(--bad);background:var(--bad-soft);}
+.bars{display:grid;gap:14px;}
+.bar-head{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-weight:600;}
+.bar{height:14px;background:var(--line);border-radius:7px;overflow:hidden;margin-top:4px;}
+.bar i{display:block;height:100%;background:var(--accent);}
+.small{font-size:.88rem;color:var(--quiet);}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.9rem;margin-top:8px;}
+.legend span::before{content:"";display:inline-block;width:18px;height:0;border-top:3px solid currentColor;margin-right:6px;vertical-align:middle;}
+.lx{color:var(--c-x);} .ly{color:var(--c-y);} .lv{color:var(--c-v);}
+.printonly{display:none;}
+[hidden]{display:none !important;}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto !important;}}
+@media print{
+  body{background:#fff;color:#000;}
+  .tabs,.playbar,.btn,.no-print{display:none !important;}
+  .printonly{display:block;}
+  .card{border-color:#999;break-inside:avoid;}
+  .bar{border:1px solid #666;} .bar i{background:#444;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Projectile Motion Lab</h1>
+  <p class="sub">Launch a projectile, change the speed, angle and heights, and watch the numbers. Then solve problems to check what you know. Air resistance is ignored and g = −10.0 m/s² with up as positive.</p>
+
+  <div class="tabs" role="tablist" aria-label="Lab sections">
+    <button class="tab" role="tab" id="t-explore" aria-selected="true" aria-controls="p-explore">Explore</button>
+    <button class="tab" role="tab" id="t-practice" aria-selected="false" aria-controls="p-practice">Solve problems</button>
+    <button class="tab" role="tab" id="t-concepts" aria-selected="false" aria-controls="p-concepts">Concept check</button>
+    <button class="tab" role="tab" id="t-progress" aria-selected="false" aria-controls="p-progress">My progress</button>
+  </div>
+
+  <!-- EXPLORE -->
+  <section id="p-explore" role="tabpanel" aria-labelledby="t-explore">
+    <div class="grid">
+      <div class="stack">
+        <div class="card">
+          <div class="row" style="margin-bottom:10px">
+            <strong>Try a scenario:</strong>
+            <button class="btn small" data-preset="1">1. Same height</button>
+            <button class="btn small" data-preset="2">2. Off a cliff</button>
+            <button class="btn small" data-preset="3">3. Up to a roof</button>
+          </div>
+          <div class="canvas-wrap"><canvas id="sim" role="img" aria-label="Projectile trajectory drawing"></canvas></div>
+          <div class="playbar">
+            <button class="btn primary" id="play">Launch</button>
+            <button class="btn" id="reset">Reset</button>
+            <label class="inl" for="scrub">Time</label>
+            <input type="range" id="scrub" min="0" max="1000" step="1" value="0" aria-label="Scrub through the flight">
+            <label class="inl" for="speed">Speed
+              <select id="speed"><option value="1">1×</option><option value="0.5" selected>0.5×</option><option value="0.25">0.25×</option></select>
+            </label>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <label class="inl"><input type="checkbox" id="optVec" checked> Velocity arrows</label>
+            <label class="inl"><input type="checkbox" id="optComp" checked><span>Show V<sub>x</sub> and V<sub>y</sub></span></label>
+            <label class="inl"><input type="checkbox" id="optStrobe"> Mark every 1 s</label>
+            <label class="inl"><input type="checkbox" id="optBoth" checked> Mark the roof height crossings</label>
+          </div>
+          <div class="legend" aria-hidden="true"><span class="lx">V<sub>x</sub> horizontal</span><span class="ly">V<sub>y</sub> vertical</span><span class="lv">V total</span></div>
+          <div class="note" id="simNote"></div>
+        </div>
+        <div class="card">
+          <h2>Set up the launch</h2>
+          <div class="ctl"><div class="top"><label for="vo">Launch speed V<sub>o</sub></label><output id="vo_o"></output></div><input type="range" id="vo" min="5" max="60" step="1" value="50"></div>
+          <div class="ctl"><div class="top"><label for="th">Launch angle θ<sub>o</sub></label><output id="th_o"></output></div><input type="range" id="th" min="1" max="89" step="1" value="37"></div>
+          <div class="ctl"><div class="top"><label for="h0">Launch height (platform or cliff)</label><output id="h0_o"></output></div><input type="range" id="h0" min="0" max="60" step="1" value="0"></div>
+          <div class="ctl" style="margin-bottom:0"><div class="top"><label for="h1">Landing height (ground, roof or ledge)</label><output id="h1_o"></output></div><input type="range" id="h1" min="0" max="60" step="1" value="0"></div>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="card">
+          <div class="badge" id="badge"></div>
+          <h3>Launch values</h3>
+          <table class="vals" id="tGiven"></table>
+          <h3 style="margin-top:14px">Landing values</h3>
+          <table class="vals" id="tResult"></table>
+        </div>
+        <div class="card">
+          <h3>Right now in the flight</h3>
+          <table class="vals" id="tLive"></table>
+        </div>
+        <div class="card">
+          <details open>
+            <summary>Show the solution steps for these settings</summary>
+            <ol class="steps" id="exSteps"></ol>
+          </details>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRACTICE -->
+  <section id="p-practice" role="tabpanel" aria-labelledby="t-practice" hidden>
+    <div class="grid">
+      <div class="card">
+        <div class="row no-print" style="margin-bottom:12px">
+          <label class="inl" for="pracMode">Problem type
+            <select id="pracMode">
+              <option value="0">Mixed</option>
+              <option value="1">1. Same height</option>
+              <option value="2">2. Off a cliff</option>
+              <option value="3">3. Up to a roof</option>
+            </select>
+          </label>
+          <label class="inl" for="pracLevel">Answers
+            <select id="pracLevel">
+              <option value="guided">Guided (components, time, distance, velocity)</option>
+              <option value="challenge">Challenge (time, distance, impact only)</option>
+            </select>
+          </label>
+          <button class="btn primary" id="newProb">New problem</button>
+        </div>
+        <div id="pracBody"></div>
+      </div>
+      <div class="stack">
+        <div class="card">
+          <h3>Sketch</h3>
+          <div class="canvas-wrap"><canvas id="pracCanvas" role="img" aria-label="Sketch of the problem"></canvas></div>
+          <p class="small" style="margin:8px 0 0">The dashed path is the flight. Use it to choose the sign of Δy.</p>
+        </div>
+        <div class="card">
+          <h3>Method</h3>
+          <ol class="steps">
+            <li>Sketch and choose signs. Find Δy.</li>
+            <li>Find V<sub>ox</sub> and V<sub>oy</sub>.</li>
+            <li>Solve for time with the y equation.</li>
+            <li>Use time in Δx = V<sub>ox</sub>t.</li>
+            <li>Find V<sub>fy</sub>, then V<sub>f</sub> and θ<sub>f</sub>.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONCEPTS -->
+  <section id="p-concepts" role="tabpanel" aria-labelledby="t-concepts" hidden>
+    <div class="card" style="max-width:760px">
+      <div class="row" style="justify-content:space-between;margin-bottom:8px"><h2 style="margin:0">Concept check</h2><button class="btn small" id="newRound">New round</button></div>
+      <div id="conBody"></div>
+    </div>
+  </section>
+
+  <!-- PROGRESS -->
+  <section id="p-progress" role="tabpanel" aria-labelledby="t-progress" hidden>
+    <div class="card" style="max-width:760px">
+      <h2>My progress</h2>
+      <p class="printonly" id="printName"></p>
+      <div class="row no-print" style="margin-bottom:12px">
+        <label class="inl" for="stuName">Name <input type="text" id="stuName" autocomplete="name" style="font:inherit;padding:6px 8px;border:1.5px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)"></label>
+        <button class="btn small" id="printBtn">Print report</button>
+        <button class="btn small" id="resetProg">Clear my progress</button>
+      </div>
+      <div id="progBody"></div>
+      <p class="small" style="margin-bottom:0">Each problem counts the answers that were correct on your first check. Levels: Beginning below 50%, Developing 50 to 69%, Proficient 70 to 84%, Mastery 85% and up.</p>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- helpers ---------- */
+  var G = 10, DEG = Math.PI / 180;
+  var FONT = '-apple-system, "Segoe UI", Roboto, Arial, sans-serif';
+  function $(s, r) { return (r || document).querySelector(s); }
+  function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+  function clamp(v, a, b) { return Math.min(b, Math.max(a, v)); }
+  function fmt(v, dp) { if (v === null || v === undefined || !isFinite(v)) return '–'; var s = (+v.toFixed(dp == null ? 1 : dp)).toString(); return s.replace('-', '\u2212'); }
+  function sb(b, s) { return b + '<sub>' + s + '</sub>'; }
+  var Vo = sb('V', 'o'), Vox = sb('V', 'ox'), Voy = sb('V', 'oy'), Vfy = sb('V', 'fy'), Vf = sb('V', 'f'), Vx = sb('V', 'x'), Vy = sb('V', 'y');
+  var THo = sb('\u03b8', 'o'), THf = sb('\u03b8', 'f');
+  function rand(a) { return a[Math.floor(Math.random() * a.length)]; }
+  function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+
+  /* ---------- physics ---------- */
+  function solve(vo, th, h0, h1) {
+    var vox = vo * Math.cos(th * DEG), voy = vo * Math.sin(th * DEG);
+    var dy = h1 - h0, disc = voy * voy - 2 * G * dy;
+    var s = { vo: vo, th: th, h0: h0, h1: h1, vox: vox, voy: voy, dy: dy, disc: disc, reach: disc >= -1e-9 };
+    s.tApex = voy / G; s.hmax = h0 + voy * voy / (2 * G);
+    if (s.reach) {
+      var r = Math.sqrt(Math.max(0, disc));
+      s.tLand = (voy + r) / G; s.tFirst = dy > 0 ? (voy - r) / G : null;
+      s.dx = vox * s.tLand; s.vfy = voy - G * s.tLand; s.vf = Math.hypot(vox, s.vfy);
+      s.thf = Math.atan2(Math.abs(s.vfy), vox) / DEG;
+      s.xEdge = dy > 0 ? (vox * s.tFirst + s.dx) / 2 : 0;
+      s.tEnd = s.tLand; s.outcome = 'land';
+    } else {
+      s.tLand = null; s.tFirst = null; s.dx = null; s.vfy = null; s.vf = null; s.thf = null;
+      s.xEdge = vox * s.tApex; s.tEnd = s.tApex; s.outcome = 'wall';
+    }
+    s.xA = dy > 0 ? s.xEdge : 0;
+    s.scenario = dy === 0 ? 1 : (dy < 0 ? 2 : 3);
+    return s;
+  }
+  function posY(s, t) { return s.h0 + s.voy * t - 0.5 * G * t * t; }
+
+  /* ---------- canvas drawing ---------- */
+  function arrow(ctx, x0, y0, x1, y1, color, w) {
+    var dx = x1 - x0, dy = y1 - y0, L = Math.hypot(dx, dy);
+    if (L < 3) return;
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = w || 2;
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+    var a = Math.atan2(dy, dx), h = Math.min(10, L * 0.5);
+    ctx.beginPath(); ctx.moveTo(x1, y1);
+    ctx.lineTo(x1 - h * Math.cos(a - 0.42), y1 - h * Math.sin(a - 0.42));
+    ctx.lineTo(x1 - h * Math.cos(a + 0.42), y1 - h * Math.sin(a + 0.42));
+    ctx.closePath(); ctx.fill();
+  }
+  function varLabel(ctx, b, s, x, y, color, size) {
+    ctx.font = '600 ' + size + 'px ' + FONT; ctx.textAlign = 'left'; ctx.fillStyle = color;
+    var w = ctx.measureText(b).width; ctx.fillText(b, x, y);
+    ctx.font = '600 ' + (size * 0.72) + 'px ' + FONT; ctx.fillText(s, x + w + 1, y + size * 0.28);
+  }
+
+  function draw(cv, s, o) {
+    var cs = getComputedStyle(document.documentElement);
+    function col(n) { return cs.getPropertyValue(n).trim(); }
+    var wrap = cv.parentElement, cssW = Math.max(280, wrap.clientWidth);
+    var X = Math.max(s.dx != null ? s.dx : s.xEdge, 10);
+    var xmin = -Math.max(0.1 * X, 7), xmax = X + Math.max(0.14 * X, 8);
+    var ytop = Math.max(s.hmax, s.h0, s.h1, 5) * 1.2 + 3;
+    var scaleW = cssW / (xmax - xmin);
+    var H = clamp(ytop * scaleW + 44, 300, 520);
+    var scale = Math.min(scaleW, (H - 44) / ytop);
+    var offX = (cssW - scale * (xmax - xmin)) / 2;
+    var dpr = window.devicePixelRatio || 1;
+    cv.width = Math.round(cssW * dpr); cv.height = Math.round(H * dpr);
+    cv.style.height = H + 'px';
+    var ctx = cv.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    function tx(x) { return offX + (x - xmin) * scale; }
+    function ty(y) { return H - 30 - y * scale; }
+
+    ctx.fillStyle = col('--sim-bg'); ctx.fillRect(0, 0, cssW, H);
+
+    /* terrain */
+    ctx.fillStyle = col('--terrain'); ctx.strokeStyle = col('--terrain-line'); ctx.lineWidth = 1.5;
+    var xA = tx(s.xA);
+    ctx.beginPath(); ctx.rect(-5, ty(s.h0), xA + 5, H - ty(s.h0) + 5); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.rect(xA, ty(s.h1), cssW - xA + 5, H - ty(s.h1) + 5); ctx.fill(); ctx.stroke();
+
+    /* distance ticks along the bottom */
+    var steps = [5, 10, 20, 25, 50, 100, 200, 500], step = 500, i;
+    for (i = 0; i < steps.length; i++) { if (steps[i] * scale >= 64) { step = steps[i]; break; } }
+    ctx.fillStyle = col('--quiet'); ctx.strokeStyle = col('--terrain-line'); ctx.font = '12px ' + FONT; ctx.textAlign = 'center'; ctx.lineWidth = 1;
+    for (var k = 0; k * step <= xmax; k++) {
+      var gx = tx(k * step);
+      ctx.beginPath(); ctx.moveTo(gx, H - 30); ctx.lineTo(gx, H - 24); ctx.stroke();
+      ctx.fillText(k * step + ' m', gx, H - 8);
+    }
+
+    /* height labels */
+    ctx.font = '600 12px ' + FONT; ctx.fillStyle = col('--quiet');
+    if (s.h0 > 0) { ctx.textAlign = 'left'; ctx.fillText('launch level: ' + s.h0 + ' m', 8, ty(s.h0) - 7); }
+    if (s.h1 > 0 && s.h1 !== s.h0) { ctx.textAlign = 'right'; ctx.fillText('landing level: ' + s.h1 + ' m', cssW - 8, ty(s.h1) + 18); }
+
+    /* path */
+    var N = 160, t;
+    ctx.setLineDash([5, 5]); ctx.strokeStyle = col('--muted-path'); ctx.lineWidth = 1.6; ctx.beginPath();
+    for (i = 0; i <= N; i++) { t = s.tEnd * i / N; var px = tx(s.vox * t), py = ty(posY(s, t)); if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py); }
+    ctx.stroke(); ctx.setLineDash([]);
+    var tNow = clamp(o.t || 0, 0, s.tEnd);
+    if (tNow > 0) {
+      ctx.strokeStyle = col('--path'); ctx.lineWidth = 3; ctx.beginPath();
+      var M = Math.max(2, Math.ceil(N * tNow / s.tEnd));
+      for (i = 0; i <= M; i++) { t = tNow * i / M; var qx = tx(s.vox * t), qy = ty(posY(s, t)); if (i === 0) ctx.moveTo(qx, qy); else ctx.lineTo(qx, qy); }
+      ctx.stroke();
+    }
+
+    /* strobe */
+    if (o.strobe) {
+      ctx.font = '12px ' + FONT; ctx.textAlign = 'left';
+      for (var m = 0; m <= Math.floor(s.tEnd + 1e-9); m++) {
+        var sx = tx(s.vox * m), sy = ty(posY(s, m));
+        ctx.fillStyle = col('--path'); ctx.beginPath(); ctx.arc(sx, sy, 3.5, 0, 7); ctx.fill();
+        ctx.fillStyle = col('--quiet'); ctx.fillText(m + ' s', sx + 6, sy - 6);
+      }
+    }
+
+    /* targets */
+    if (s.reach) {
+      ctx.strokeStyle = col('--good'); ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(tx(s.dx), ty(s.h1), 8, 0, 7); ctx.stroke();
+      if (o.both && s.tFirst !== null) {
+        var fx = tx(s.vox * s.tFirst), fy = ty(s.h1);
+        ctx.strokeStyle = col('--quiet'); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(fx, fy, 6, 0, 7); ctx.stroke();
+        ctx.fillStyle = col('--quiet'); ctx.font = '12px ' + FONT; ctx.textAlign = 'right';
+        ctx.fillText('first at this height (rising)', fx - 10, fy + 16);
+      }
+    } else {
+      var wx = tx(s.xEdge), wy = ty(s.hmax);
+      ctx.strokeStyle = col('--bad'); ctx.lineWidth = 3; ctx.beginPath();
+      ctx.moveTo(wx - 7, wy - 7); ctx.lineTo(wx + 7, wy + 7); ctx.moveTo(wx + 7, wy - 7); ctx.lineTo(wx - 7, wy + 7); ctx.stroke();
+    }
+
+    /* ball and vectors */
+    var bx = tx(s.vox * tNow), by = ty(posY(s, tNow));
+    var vy = s.voy - G * tNow, vs = 2.1;
+    if (o.vectors) {
+      var ex = bx + s.vox * vs, ey = by - vy * vs;
+      if (o.components) {
+        arrow(ctx, bx, by, ex, by, col('--c-x'), 2.2);
+        arrow(ctx, bx, by, bx, ey, col('--c-y'), 2.2);
+      }
+      arrow(ctx, bx, by, ex, ey, col('--c-v'), 2.6);
+      if (o.components) {
+        varLabel(ctx, 'V', 'x', ex + 4, by + 4, col('--c-x'), 13);
+        if (Math.abs(vy * vs) > 14) varLabel(ctx, 'V', 'y', bx + 6, (by + ey) / 2, col('--c-y'), 13);
+      }
+      varLabel(ctx, 'V', '', ex + 5, ey - 5, col('--c-v'), 13);
+    }
+    ctx.fillStyle = col('--accent'); ctx.strokeStyle = col('--card'); ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(bx, by, 7.5, 0, 7); ctx.fill(); ctx.stroke();
+  }
+
+  /* ---------- solution steps (shared) ---------- */
+  function steps(s) {
+    var L = [], f = fmt;
+    L.push('<b>Sketch and choose signs.</b> Launch height ' + s.h0 + ' m, landing height ' + s.h1 + ' m, so \u0394y = ' + s.h1 + ' \u2212 ' + s.h0 + ' = ' + f(s.dy, 0) + ' m. Up is positive and g = \u221210.0 m/s\u00b2.');
+    L.push('<b>Components.</b> ' + Vox + ' = ' + s.vo + ' cos ' + s.th + '\u00b0 = ' + f(s.vox, 2) + ' m/s and ' + Voy + ' = ' + s.vo + ' sin ' + s.th + '\u00b0 = ' + f(s.voy, 2) + ' m/s.');
+    if (!s.reach) {
+      L.push('<b>Time.</b> 5t\u00b2 \u2212 ' + f(s.voy, 2) + 't + (' + f(s.dy, 0) + ') = 0 has a negative square root: ' + Voy + '\u00b2 \u2212 20\u0394y = ' + f(s.disc, 1) + '. The projectile never reaches that height, so it hits the wall instead.');
+      return L;
+    }
+    var r = Math.sqrt(Math.max(0, s.disc));
+    if (s.dy === 0) {
+      L.push('<b>Time (y column).</b> \u0394y = 0 = ' + Voy + 't \u2212 5t\u00b2, so t = ' + Voy + ' / 5 = ' + f(s.voy, 2) + ' / 5 = <b>' + f(s.tLand, 2) + ' s</b>.');
+    } else if (s.dy < 0) {
+      L.push('<b>Time (y column).</b> \u0394y = ' + Voy + 't \u2212 5t\u00b2 gives 5t\u00b2 \u2212 ' + f(s.voy, 2) + 't \u2212 ' + f(-s.dy, 0) + ' = 0, so t = [' + f(s.voy, 2) + ' \u00b1 \u221a(' + f(s.disc + 0, 1) + ')] / 10. Keep the positive root: <b>t = ' + f(s.tLand, 2) + ' s</b>.');
+    } else {
+      L.push('<b>Time (y column).</b> 5t\u00b2 \u2212 ' + f(s.voy, 2) + 't + ' + f(s.dy, 0) + ' = 0, so t = [' + f(s.voy, 2) + ' \u00b1 \u221a(' + f(s.disc, 1) + ')] / 10 = ' + f(s.tFirst, 2) + ' s (rising) or ' + f(s.tLand, 2) + ' s (falling). Landing on top arrives while falling, so <b>t = ' + f(s.tLand, 2) + ' s</b>.');
+    }
+    L.push('<b>Horizontal distance (x column).</b> \u0394x = ' + Vox + 't = ' + f(s.vox, 2) + ' \u00d7 ' + f(s.tLand, 2) + ' = <b>' + f(s.dx, 1) + ' m</b>.');
+    L.push('<b>Final vertical velocity.</b> ' + Vfy + ' = ' + Voy + ' + gt = ' + f(s.voy, 2) + ' + (\u221210)(' + f(s.tLand, 2) + ') = <b>' + f(s.vfy, 1) + ' m/s</b>.');
+    L.push('<b>Impact speed and angle.</b> ' + Vf + ' = \u221a(' + f(s.vox, 1) + '\u00b2 + ' + f(s.vfy, 1) + '\u00b2) = <b>' + f(s.vf, 1) + ' m/s</b> and ' + THf + ' = tan\u207b\u00b9(' + f(Math.abs(s.vfy), 1) + ' / ' + f(s.vox, 1) + ') = <b>' + f(s.thf, 1) + '\u00b0 ' + (s.vfy < 0 ? 'below' : 'above') + ' the horizontal</b>.');
+    return L;
+  }
+
+  /* ---------- storage ---------- */
+  var KEY = 'projectile-lab-v1';
+  var store = { s1: { n: 0, sum: 0 }, s2: { n: 0, sum: 0 }, s3: { n: 0, sum: 0 }, c: { n: 0, ok: 0 }, name: '' };
+  try { var raw = localStorage.getItem(KEY); if (raw) { var o = JSON.parse(raw); if (o && o.s1) store = o; } } catch (e) { }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) { } }
+
+  /* ---------- tabs ---------- */
+  var TABS = ['explore', 'practice', 'concepts', 'progress'];
+  function showTab(name) {
+    TABS.forEach(function (n) {
+      var sel = n === name;
+      $('#t-' + n).setAttribute('aria-selected', sel ? 'true' : 'false');
+      $('#p-' + n).hidden = !sel;
+    });
+    if (name === 'explore') renderExplore();
+    if (name === 'practice') { if (!PR.cur) newProblem(); else drawPrac(); }
+    if (name === 'concepts' && !CO.qs) newRound();
+    if (name === 'progress') renderProgress();
+  }
+  TABS.forEach(function (n) {
+    $('#t-' + n).addEventListener('click', function () { showTab(n); });
+    $('#t-' + n).addEventListener('keydown', function (e) {
+      var i = TABS.indexOf(n), j = null;
+      if (e.key === 'ArrowRight') j = (i + 1) % TABS.length;
+      if (e.key === 'ArrowLeft') j = (i + TABS.length - 1) % TABS.length;
+      if (j !== null) { e.preventDefault(); showTab(TABS[j]); $('#t-' + TABS[j]).focus(); }
+    });
+  });
+
+  /* =====================================================
+     EXPLORE
+     ===================================================== */
+  var ST = { vo: 50, th: 37, h0: 0, h1: 0, t: 0, playing: false, speed: 0.5, sol: null, last: 0 };
+  var simCv = $('#sim');
+  var PRESETS = { 1: [50, 37, 0, 0], 2: [20, 30, 40, 0], 3: [25, 53, 0, 15] };
+
+  function readParams() {
+    ST.vo = +$('#vo').value; ST.th = +$('#th').value; ST.h0 = +$('#h0').value; ST.h1 = +$('#h1').value;
+    $('#vo_o').textContent = ST.vo + ' m/s';
+    $('#th_o').textContent = ST.th + '\u00b0';
+    $('#h0_o').textContent = ST.h0 + ' m';
+    $('#h1_o').textContent = ST.h1 + ' m';
+    ST.sol = solve(ST.vo, ST.th, ST.h0, ST.h1);
+  }
+  function params() {
+    readParams(); ST.t = 0; ST.playing = false; $('#play').textContent = 'Launch'; $('#scrub').value = 0;
+    renderStatic(); renderExplore();
+  }
+  function row(name, val) { return '<tr><td>' + name + '</td><td>' + val + '</td></tr>'; }
+  function renderStatic() {
+    var s = ST.sol;
+    var names = { 1: 'Scenario 1: starting and landing at the same height', 2: 'Scenario 2: landing below the launch point', 3: 'Scenario 3: landing above the launch point' };
+    var eq = { 1: 'Δy = 0, so t = ' + Voy + ' / 5 and the path is symmetric.', 2: 'Δy is negative. Solve the quadratic and keep the positive root.', 3: 'Δy is positive. The quadratic has two roots; landing on top uses the larger one.' };
+    $('#badge').innerHTML = '<b>' + names[s.scenario] + '</b>' + eq[s.scenario];
+    $('#tGiven').innerHTML = row(Vo, fmt(s.vo, 0) + ' m/s') + row(THo, fmt(s.th, 0) + '\u00b0') +
+      row(Vox + ' = ' + Vo + ' cos ' + THo, fmt(s.vox, 2) + ' m/s') + row(Voy + ' = ' + Vo + ' sin ' + THo, fmt(s.voy, 2) + ' m/s') +
+      row('\u0394y', fmt(s.dy, 0) + ' m');
+    if (s.reach) {
+      $('#tResult').innerHTML = row('Time of flight t', fmt(s.tLand, 2) + ' s') + row('Horizontal distance \u0394x', fmt(s.dx, 1) + ' m') +
+        row(Vfy, fmt(s.vfy, 1) + ' m/s') + row('Impact speed ' + Vf, fmt(s.vf, 1) + ' m/s') +
+        row('Impact angle ' + THf, fmt(s.thf, 1) + '\u00b0 ' + (s.vfy < 0 ? 'below' : 'above')) +
+        row('Highest point (above the ground)', fmt(s.hmax, 1) + ' m') +
+        (s.tFirst !== null ? row('Earlier time at landing height (rising)', fmt(s.tFirst, 2) + ' s') : '');
+    } else {
+      $('#tResult').innerHTML = row('Landing', 'not reached') + row('Highest point (above the ground)', fmt(s.hmax, 1) + ' m');
+    }
+    var L = steps(s);
+    $('#exSteps').innerHTML = L.map(function (x) { return '<li>' + x + '</li>'; }).join('');
+    $('#simNote').textContent = s.reach ? '' : 'The ball is not thrown high enough. It tops out at ' + fmt(s.hmax, 1) + ' m and hits the wall below the roof. Raise the speed or angle, or lower the landing height.';
+  }
+  function renderLive() {
+    var s = ST.sol, t = ST.t, vy = s.voy - G * t;
+    $('#tLive').innerHTML = row('Time t', fmt(t, 2) + ' s') + row('Horizontal position x', fmt(s.vox * t, 1) + ' m') +
+      row('Height above the ground', fmt(posY(s, t), 1) + ' m') + row(Vx + ' (never changes)', fmt(s.vox, 2) + ' m/s') +
+      row(Vy, fmt(vy, 2) + ' m/s') + row('Speed', fmt(Math.hypot(s.vox, vy), 2) + ' m/s');
+  }
+  function renderExplore() {
+    if (!ST.sol) readParams();
+    draw(simCv, ST.sol, { t: ST.t, vectors: $('#optVec').checked, components: $('#optComp').checked, strobe: $('#optStrobe').checked, both: $('#optBoth').checked });
+    renderLive();
+  }
+  function frame(ts) {
+    if (!ST.playing) return;
+    var dt = clamp((ts - ST.last) / 1000, 0, 0.1); ST.last = ts;
+    ST.t = Math.min(ST.sol.tEnd, ST.t + dt * ST.speed);
+    if (ST.t >= ST.sol.tEnd) { ST.playing = false; $('#play').textContent = 'Launch again'; }
+    $('#scrub').value = Math.round(1000 * ST.t / ST.sol.tEnd);
+    renderExplore();
+    if (ST.playing) requestAnimationFrame(frame);
+  }
+  $('#play').addEventListener('click', function () {
+    if (ST.playing) { ST.playing = false; $('#play').textContent = 'Resume'; return; }
+    if (ST.t >= ST.sol.tEnd - 1e-6) ST.t = 0;
+    ST.playing = true; ST.last = performance.now(); $('#play').textContent = 'Pause';
+    requestAnimationFrame(frame);
+  });
+  $('#reset').addEventListener('click', function () { ST.playing = false; ST.t = 0; $('#scrub').value = 0; $('#play').textContent = 'Launch'; renderExplore(); });
+  $('#scrub').addEventListener('input', function () { ST.playing = false; $('#play').textContent = 'Resume'; ST.t = ST.sol.tEnd * (+this.value) / 1000; renderExplore(); });
+  $('#speed').addEventListener('change', function () { ST.speed = +this.value; });
+  ['vo', 'th', 'h0', 'h1'].forEach(function (id) { $('#' + id).addEventListener('input', params); });
+  ['optVec', 'optComp', 'optStrobe', 'optBoth'].forEach(function (id) { $('#' + id).addEventListener('change', renderExplore); });
+  $$('[data-preset]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var p = PRESETS[b.getAttribute('data-preset')];
+      $('#vo').value = p[0]; $('#th').value = p[1]; $('#h0').value = p[2]; $('#h1').value = p[3];
+      params();
+    });
+  });
+
+  /* =====================================================
+     PRACTICE
+     ===================================================== */
+  var PR = { cur: null, checks: 0, recorded: false, solved: false, fields: [] };
+
+  function genProblem(scn) {
+    for (var k = 0; k < 300; k++) {
+      var th = rand([30, 37, 45, 53, 60]), vo = rand([10, 15, 20, 25, 30, 35, 40]);
+      var voy = vo * Math.sin(th * DEG);
+      if (scn === 1) return { scn: 1, vo: vo, th: th, h0: 0, h1: 0 };
+      if (scn === 2) return { scn: 2, vo: vo, th: th, h0: rand([10, 15, 20, 25, 30, 35, 40, 45, 50]), h1: 0 };
+      var maxH = 0.8 * voy * voy / 20, opts = [];
+      for (var h = 5; h <= maxH; h += 5) opts.push(h);
+      if (opts.length) return { scn: 3, vo: vo, th: th, h0: 0, h1: rand(opts) };
+    }
+    return { scn: 3, vo: 30, th: 53, h0: 0, h1: 19 };
+  }
+  function statement(p) {
+    var v = p.vo + ' m/s', a = p.th + '\u00b0 above the horizontal';
+    if (p.scn === 1) return rand(['A soccer ball is kicked', 'A football is punted', 'A golf ball is driven']) + ' from level ground at ' + Vo + ' = ' + v + ' and ' + THo + ' = ' + a + '. It lands on level ground.';
+    if (p.scn === 2) return rand(['A stone is thrown', 'A rock is launched', 'A ball is thrown']) + ' from the edge of a ' + p.h0 + ' m cliff at ' + Vo + ' = ' + v + ' and ' + THo + ' = ' + a + '. It lands on the ground at the base of the cliff.';
+    return rand(['A ball is thrown', 'A football is thrown', 'A rock is launched']) + ' from the ground at ' + Vo + ' = ' + v + ' and ' + THo + ' = ' + a + ' toward a building. It lands on the flat roof, ' + p.h1 + ' m above the ground.';
+  }
+  var FIELD_DEFS = [
+    { key: 'vox', label: Vox, unit: 'm/s', val: function (s) { return s.vox; }, hint: 'Check ' + Vox + ' = ' + Vo + ' cos ' + THo + '. Is your calculator in degree mode?' },
+    { key: 'voy', label: Voy, unit: 'm/s', val: function (s) { return s.voy; }, hint: 'Check ' + Voy + ' = ' + Vo + ' sin ' + THo + '. Is your calculator in degree mode?' },
+    { key: 't', label: 'Time of flight t', unit: 's', val: function (s) { return s.tLand; }, hint: 'Use only the y column. Make sure \u0394y has the right sign and g = \u221210.0. In Scenario 2 keep the positive root; in Scenario 3 use the larger root.' },
+    { key: 'dx', label: 'Horizontal distance \u0394x', unit: 'm', val: function (s) { return s.dx; }, hint: '\u0394x = ' + Vox + ' \u00d7 t. Use your time from the y column.' },
+    { key: 'vfy', label: Vfy, unit: 'm/s', val: function (s) { return s.vfy; }, hint: Vfy + ' = ' + Voy + ' + g t with g = \u221210.0. It is negative when the object is falling.' },
+    { key: 'vf', label: 'Impact speed ' + Vf, unit: 'm/s', val: function (s) { return s.vf; }, hint: Vf + ' needs both components: \u221a(' + Vox + '\u00b2 + ' + Vfy + '\u00b2).' },
+    { key: 'thf', label: 'Impact angle ' + THf, unit: '\u00b0 below horizontal', val: function (s) { return s.thf; }, hint: THf + ' = tan\u207b\u00b9(|' + Vfy + '| / ' + Vox + ').' }
+  ];
+
+  function newProblem() {
+    var mode = +$('#pracMode').value, scn = mode === 0 ? rand([1, 2, 3]) : mode;
+    var p = genProblem(scn); p.sol = solve(p.vo, p.th, p.h0, p.h1); p.text = statement(p);
+    PR.cur = p; PR.checks = 0; PR.recorded = false; PR.solved = false;
+    renderProblem();
+  }
+  function activeFields() {
+    var guided = $('#pracLevel').value === 'guided';
+    return FIELD_DEFS.filter(function (f) { return guided || ['t', 'dx', 'vf', 'thf'].indexOf(f.key) >= 0; });
+  }
+  function renderProblem() {
+    var p = PR.cur; PR.fields = activeFields();
+    var html = '<p class="problem">' + p.text + '</p><p class="small" style="margin-top:0">Find the following. Use g = \u221210.0 m/s\u00b2 and round to the nearest tenth.</p>';
+    if (p.scn === 3) {
+      html += '<div class="mc"><strong>When the ball lands on the roof, it is…</strong><br>' +
+        '<label><input type="radio" name="mc" value="rising"> still rising</label>' +
+        '<label><input type="radio" name="mc" value="falling"> falling</label><span class="st" id="st_mc" style="display:block;font-size:.88rem;min-height:1.3em"></span></div>';
+    }
+    html += '<div class="fields">' + PR.fields.map(function (f) {
+      return '<div class="field" id="f_' + f.key + '"><label for="ans_' + f.key + '">' + f.label + ' <span class="u">(' + f.unit + ')</span></label>' +
+        '<input type="number" step="any" inputmode="decimal" id="ans_' + f.key + '"><span class="st" id="st_' + f.key + '"></span></div>';
+    }).join('') + '</div>';
+    html += '<div class="row no-print"><button class="btn primary" id="checkBtn">Check answers</button><button class="btn" id="solBtn" disabled>Show worked solution</button><button class="btn" id="nextBtn" hidden>Next problem</button></div>';
+    html += '<div id="pracMsg" aria-live="polite"></div><div id="pracSol" hidden></div>';
+    $('#pracBody').innerHTML = html;
+    $('#checkBtn').addEventListener('click', checkAnswers);
+    $('#solBtn').addEventListener('click', showSolution);
+    $('#nextBtn').addEventListener('click', newProblem);
+    drawPrac();
+  }
+  function drawPrac() {
+    if (!PR.cur) return;
+    draw($('#pracCanvas'), PR.cur.sol, { t: 0, vectors: false, components: false, strobe: false, both: false });
+  }
+  function checkAnswers() {
+    var p = PR.cur, s = p.sol, ok = 0, total = PR.fields.length + (p.scn === 3 ? 1 : 0), hints = [];
+    PR.fields.forEach(function (f) {
+      var el = $('#ans_' + f.key), st = $('#st_' + f.key), box = $('#f_' + f.key);
+      var raw = el.value.trim().replace('\u2212', '-'), v = parseFloat(raw), c = f.val(s);
+      var tol = Math.max(0.02 * Math.abs(c), 0.06);
+      box.classList.remove('ok', 'bad');
+      if (raw === '' || isNaN(v)) { box.classList.add('bad'); st.textContent = 'Enter a number.'; hints.push(f.hint); return; }
+      if (Math.abs(v - c) <= tol) { ok++; box.classList.add('ok'); st.textContent = 'Correct'; }
+      else {
+        box.classList.add('bad');
+        if (Math.abs(v + c) <= tol) { st.textContent = 'Check the sign.'; hints.push('The size is right but the sign is not. Up is positive, so a falling object has a negative vertical velocity.'); }
+        else { st.textContent = 'Not quite.'; hints.push(f.hint); }
+      }
+    });
+    if (p.scn === 3) {
+      var sel = $('input[name="mc"]:checked'), st2 = $('#st_mc');
+      if (sel && sel.value === 'falling') { ok++; st2.textContent = 'Correct: it arrives on the way down.'; st2.style.color = 'var(--good)'; }
+      else { st2.textContent = sel ? 'Not quite. The larger root is the landing on top.' : 'Choose one.'; st2.style.color = 'var(--bad)'; hints.unshift('Two times reach the roof height: once rising, once falling. Landing on top uses the later time.'); }
+    }
+    PR.checks++;
+    if (!PR.recorded) {
+      PR.recorded = true;
+      var key = 's' + p.scn; store[key].n++; store[key].sum += ok / total; save();
+    }
+    var msg = $('#pracMsg');
+    $('#solBtn').disabled = false;
+    if (ok === total) {
+      PR.solved = true;
+      msg.className = 'msg good'; msg.textContent = (PR.checks === 1 ? 'All correct on the first check.' : 'All correct.') + ' Nice work.';
+      $('#nextBtn').hidden = false; $('#nextBtn').className = 'btn primary'; $('#checkBtn').disabled = true;
+    } else {
+      msg.className = 'msg bad';
+      var uniq = hints.filter(function (h, i) { return hints.indexOf(h) === i; }).slice(0, 2);
+      msg.innerHTML = '<strong>' + ok + ' of ' + total + ' correct.</strong> Hint: ' + uniq.join(' ') + ' Fix the red answers and check again, or open the worked solution.';
+      $('#nextBtn').hidden = false;
+    }
+  }
+  function showSolution() {
+    var p = PR.cur, box = $('#pracSol');
+    box.hidden = false;
+    box.innerHTML = '<div class="msg"><strong>Worked solution</strong><ol class="steps">' + steps(p.sol).map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ol></div>';
+    box.scrollIntoView({ block: 'nearest' });
+  }
+  $('#newProb').addEventListener('click', newProblem);
+  $('#pracMode').addEventListener('change', newProblem);
+  $('#pracLevel').addEventListener('change', function () { if (PR.cur) { PR.checks = 0; renderProblem(); } });
+
+  /* =====================================================
+     CONCEPT CHECK
+     ===================================================== */
+  var BANK = [
+    { q: 'At the very top of the path, which statement is true?', o: ['The velocity is zero', 'V<sub>y</sub> = 0 and V<sub>x</sub> = V<sub>ox</sub>', 'V<sub>x</sub> = 0 and V<sub>y</sub> = V<sub>oy</sub>', 'The acceleration is zero'], a: 1, e: 'Gravity only changes the vertical velocity. At the peak V<sub>y</sub> = 0, but V<sub>x</sub> never changed, so the speed is V<sub>ox</sub>.' },
+    { q: 'A ball is kicked from level ground and lands on level ground. How does its impact speed compare with its launch speed?', o: ['Less', 'Equal', 'Greater', 'It depends on the angle'], a: 1, e: 'With Δy = 0 the path is symmetric: V<sub>fy</sub> = −V<sub>oy</sub> and V<sub>x</sub> is unchanged, so V<sub>f</sub> = V<sub>o</sub>.' },
+    { q: 'What is the acceleration of a projectile at the top of its path? Ignore air resistance.', o: ['Zero', '10 m/s² upward', '10 m/s² downward', 'V<sub>ox</sub> / t'], a: 2, e: 'The acceleration is g = −10 m/s² the whole time, including at the top.' },
+    { q: 'A stone is thrown from a cliff and lands on the ground far below. Compared with the launch, the impact speed is…', o: ['Smaller', 'The same', 'Greater', 'Zero in the vertical direction'], a: 2, e: 'The stone keeps speeding up as it falls below the launch height, so V<sub>fy</sub> is larger in size than V<sub>oy</sub> and V<sub>f</sub> > V<sub>o</sub>.' },
+    { q: 'You throw a ball from the ground onto a roof. What is the sign of Δy?', o: ['Positive', 'Negative', 'Zero', 'It depends on g'], a: 0, e: 'The landing point is above the launch point, so Δy is positive.' },
+    { q: 'For a ball landing on a flat roof, the quadratic for time has two positive roots. Which root is the landing?', o: ['The smaller root, while rising', 'The larger root, while falling', 'The average of the two', 'Neither; use the negative root'], a: 1, e: 'A flat roof catches the ball as it comes down, so use the later time. The earlier time is when the ball first passes that height on the way up.' },
+    { q: 'Ball A is launched with V<sub>ox</sub> = 10 m/s and V<sub>oy</sub> = 20 m/s. Ball B has V<sub>ox</sub> = 30 m/s and V<sub>oy</sub> = 20 m/s. Both start and land at ground level. Which is in the air longer?', o: ['Ball A', 'Ball B', 'They are in the air the same time', 'Not enough information'], a: 2, e: 'Time of flight depends only on the vertical motion. Same V<sub>oy</sub> and same Δy give the same time.' },
+    { q: 'Which quantity stays constant during the flight of a projectile?', o: ['Speed', 'V<sub>y</sub>', 'V<sub>x</sub>', 'Height'], a: 2, e: 'There is no horizontal acceleration, so V<sub>x</sub> = V<sub>ox</sub> the whole way.' },
+    { q: 'Which equation do you use first to find the time of flight?', o: ['Δx = V<sub>ox</sub>t', 'Δy = V<sub>oy</sub>t + ½gt²', 'V<sub>f</sub> = √(V<sub>ox</sub>² + V<sub>fy</sub>²)', 'V<sub>ox</sub> = V<sub>o</sub> cos θ<sub>o</sub>'], a: 1, e: 'The vertical equation contains Δy, which you know. Time then carries into the horizontal equation.' },
+    { q: 'From a level start, which pair of launch angles gives the same range at the same speed?', o: ['20° and 40°', '30° and 60°', '45° and 60°', '10° and 20°'], a: 1, e: 'Angles that add to 90° give the same range on level ground, because range depends on sin 2θ<sub>o</sub>.' },
+    { q: 'You launch off the same cliff with the same speed and angle, but the cliff is made 10 m taller. What happens to the impact speed?', o: ['It decreases', 'It stays the same', 'It increases', 'It becomes zero'], a: 2, e: 'The stone falls through a larger drop, so V<sub>fy</sub> is larger in size and V<sub>f</sub> increases.' },
+    { q: 'What does the sign of V<sub>fy</sub> tell you at impact?', o: ['Negative means moving downward', 'Positive means moving downward', 'Negative means the ball is slowing down', 'The sign has no meaning'], a: 0, e: 'With up as positive, a negative V<sub>fy</sub> means the object is moving down.' }
+  ];
+  var CO = { qs: null, i: 0, score: 0, answered: false };
+  function newRound() { CO.qs = shuffle(BANK).slice(0, 5); CO.i = 0; CO.score = 0; CO.answered = false; renderCon(); }
+  function renderCon() {
+    var body = $('#conBody');
+    if (CO.i >= CO.qs.length) {
+      body.innerHTML = '<div class="msg ' + (CO.score >= 4 ? 'good' : '') + '"><strong>You scored ' + CO.score + ' of ' + CO.qs.length + '.</strong> ' +
+        (CO.score >= 4 ? 'Strong grasp of the ideas.' : 'Review the explanations, then try a new round or practice problems.') + '</div>' +
+        '<button class="btn primary" id="again">New round</button>';
+      $('#again').addEventListener('click', newRound);
+      return;
+    }
+    var q = CO.qs[CO.i];
+    var order = shuffle(q.o.map(function (t, k) { return { t: t, k: k }; }));
+    body.innerHTML = '<p class="small">Question ' + (CO.i + 1) + ' of ' + CO.qs.length + '</p><p class="problem">' + q.q + '</p><div class="opts">' +
+      order.map(function (x) { return '<button class="opt" data-k="' + x.k + '">' + x.t + '</button>'; }).join('') +
+      '</div><div id="conMsg" aria-live="polite"></div>';
+    CO.answered = false;
+    $$('.opt', body).forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (CO.answered) return;
+        CO.answered = true;
+        var k = +b.getAttribute('data-k'), good = k === q.a;
+        store.c.n++; if (good) { store.c.ok++; CO.score++; } save();
+        $$('.opt', body).forEach(function (x) {
+          x.disabled = true;
+          if (+x.getAttribute('data-k') === q.a) x.classList.add('ok');
+        });
+        if (!good) b.classList.add('bad');
+        $('#conMsg').innerHTML = '<div class="msg ' + (good ? 'good' : 'bad') + '"><strong>' + (good ? 'Correct.' : 'Not quite.') + '</strong> ' + q.e + '</div><button class="btn primary" id="nextQ">' + (CO.i + 1 < CO.qs.length ? 'Next question' : 'See my score') + '</button>';
+        $('#nextQ').addEventListener('click', function () { CO.i++; renderCon(); });
+        $('#nextQ').focus();
+      });
+    });
+  }
+  $('#newRound').addEventListener('click', newRound);
+
+  /* =====================================================
+     PROGRESS
+     ===================================================== */
+  function level(pct) { return pct >= 85 ? 'Mastery' : pct >= 70 ? 'Proficient' : pct >= 50 ? 'Developing' : 'Beginning'; }
+  function renderProgress() {
+    var cats = [
+      { id: 's1', name: 'Scenario 1: same height', n: store.s1.n, pct: store.s1.n ? 100 * store.s1.sum / store.s1.n : 0, unit: 'problems' },
+      { id: 's2', name: 'Scenario 2: off a cliff', n: store.s2.n, pct: store.s2.n ? 100 * store.s2.sum / store.s2.n : 0, unit: 'problems' },
+      { id: 's3', name: 'Scenario 3: up to a roof', n: store.s3.n, pct: store.s3.n ? 100 * store.s3.sum / store.s3.n : 0, unit: 'problems' },
+      { id: 'c', name: 'Concept check', n: store.c.n, pct: store.c.n ? 100 * store.c.ok / store.c.n : 0, unit: 'questions' }
+    ];
+    var html = '<div class="bars">', done = cats.filter(function (c) { return c.n > 0; });
+    cats.forEach(function (c) {
+      html += '<div><div class="bar-head"><span>' + c.name + '</span><span>' + (c.n ? Math.round(c.pct) + '% · ' + level(c.pct) : 'Not started') + '</span></div>' +
+        '<div class="bar" role="img" aria-label="' + c.name + ' ' + Math.round(c.pct) + ' percent"><i style="width:' + Math.round(c.pct) + '%"></i></div>' +
+        '<div class="small">' + c.n + ' ' + c.unit + ' attempted</div></div>';
+    });
+    html += '</div>';
+    if (done.length) {
+      var avg = done.reduce(function (a, c) { return a + c.pct; }, 0) / done.length;
+      var low = done.slice().sort(function (a, b) { return a.pct - b.pct; })[0];
+      var next = cats.filter(function (c) { return c.n === 0; })[0];
+      html += '<div class="msg" style="margin-top:16px"><strong>Overall: ' + Math.round(avg) + '% · ' + level(avg) + '.</strong> ' +
+        (next ? 'Next step: try ' + next.name.toLowerCase() + '.' : 'Focus next on ' + low.name.toLowerCase() + '.') + '</div>';
+    } else {
+      html += '<div class="msg" style="margin-top:16px">Nothing recorded yet. Solve a problem or take a concept check and your results will appear here.</div>';
+    }
+    $('#progBody').innerHTML = html;
+    $('#stuName').value = store.name || '';
+    $('#printName').textContent = 'Student: ' + (store.name || '__________________') + '   Date: ' + new Date().toLocaleDateString();
+  }
+  $('#stuName').addEventListener('input', function () { store.name = this.value; save(); $('#printName').textContent = 'Student: ' + (store.name || '__________________') + '   Date: ' + new Date().toLocaleDateString(); });
+  $('#printBtn').addEventListener('click', function () { window.print(); });
+  $('#resetProg').addEventListener('click', function () {
+    if (!window.confirm('Clear all of your saved results on this device?')) return;
+    var nm = store.name;
+    store = { s1: { n: 0, sum: 0 }, s2: { n: 0, sum: 0 }, s3: { n: 0, sum: 0 }, c: { n: 0, ok: 0 }, name: nm };
+    save(); renderProgress();
+  });
+
+  /* ---------- resize and theme ---------- */
+  function redraw() { if (!$('#p-explore').hidden) renderExplore(); if (!$('#p-practice').hidden) drawPrac(); }
+  window.addEventListener('resize', redraw);
+  if (window.matchMedia) { try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redraw); } catch (e) { } }
+
+  /* ---------- start ---------- */
+  params();
+})();
+</script>
+</body>
+</html>
