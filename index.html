@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Physics Tools · Cherokee High School</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #ffffff;
+    --grid: #e6ebf0;
+    --ink: #1a1f24;
+    --muted: #55606b;
+    --line: #c9d1d9;
+    --link: #1f4e8c;
+    --hover: #f2f6fa;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --paper: #15191d;
+      --grid: #1e242a;
+      --ink: #e8ecef;
+      --muted: #9aa5af;
+      --line: #333c45;
+      --link: #8ab8f0;
+      --hover: #1c2228;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--paper); }
+  body {
+    margin: 0;
+    font-family: "Atkinson Hyperlegible", "Segoe UI", Arial, sans-serif;
+    color: var(--ink);
+    line-height: 1.5;
+    /* faint graph-paper grid */
+    background-color: var(--paper);
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 24px 24px;
+    min-height: 100vh;
+  }
+  main {
+    max-width: 44rem;
+    margin: 0 auto;
+    padding: 4rem 1.5rem 3rem;
+  }
+  h1 {
+    font-size: clamp(2rem, 6vw, 2.75rem);
+    line-height: 1.1;
+    margin: 0 0 0.5rem;
+    letter-spacing: -0.01em;
+  }
+  .sub {
+    color: var(--muted);
+    margin: 0 0 2.5rem;
+    font-size: 1.05rem;
+  }
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 2px solid var(--ink);
+    background: var(--paper);
+  }
+  li { border-bottom: 1px solid var(--line); }
+  a.tool {
+    display: block;
+    padding: 1.1rem 0.75rem;
+    text-decoration: none;
+    color: inherit;
+  }
+  a.tool:hover { background: var(--hover); }
+  a.tool:focus-visible {
+    outline: 3px solid var(--link);
+    outline-offset: -3px;
+  }
+  .title {
+    display: block;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: var(--link);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .desc {
+    display: block;
+    color: var(--muted);
+    margin-top: 0.2rem;
+  }
+  footer {
+    margin-top: 2.5rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  @media print {
+    body { background: #fff; color: #000; }
+    .title { color: #000; }
+    .title::after { content: " (" attr(data-url) ")"; font-weight: 400; font-size: 0.85rem; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Physics Tools</h1>
+  <p class="sub">Interactive simulations and tools for AP Physics 1 at Cherokee High School.</p>
+
+  <ul id="tool-list"></ul>
+
+  <footer>Mr. Pol · Room D-207</footer>
+</main>
+
+<script>
+  // ===== EDIT THIS LIST =====
+  // file: the exact filename in the repo (case matters)
+  // title / desc: what students see
+  const tools = [
+    {
+      file:  "projectile-motion-tutorial-simulation.html",
+      title: "Projectile Motion",
+      desc:  "Tutorial and simulation of launch angle, speed, and trajectory."
+    },
+    {
+      file:  "graphing-tool.html",
+      title: "Graphing Tool",
+      desc:  "Plot and analyze data from lab experiments."
+    },
+    {
+      file:  "REPLACE-WITH-THIRD-FILE.html",
+      title: "Third Tool",
+      desc:  "Short description of what this tool does."
+    },
+    {
+      file:  "REPLACE-WITH-FOURTH-FILE.html",
+      title: "Fourth Tool",
+      desc:  "Short description of what this tool does."
+    }
+  ];
+  // ===========================
+
+  const list = document.getElementById("tool-list");
+  tools.forEach(t => {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.className = "tool";
+    a.href = t.file;
+    a.innerHTML =
+      '<span class="title" data-url="' + t.file + '"></span>' +
+      '<span class="desc"></span>';
+    a.querySelector(".title").textContent = t.title;
+    a.querySelector(".desc").textContent = t.desc;
+    li.appendChild(a);
+    list.appendChild(li);
+  });
+</script>
+</body>
+</html>
