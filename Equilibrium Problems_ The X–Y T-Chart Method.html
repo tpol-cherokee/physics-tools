@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Equilibrium Problems: The X–Y T-Chart Method</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#ffffff; --ink:#000000; --muted:#474747; --accent:#E87722; --accent-text:#9c4808;
+  --tint:#fde9d7; --dot:#cdcdcd; --panel:#f4f4f4;
+  --sans:"Atkinson Hyperlegible", Verdana, "Segoe UI", sans-serif;
+  --math:"STIX Two Text", "Cambria Math", Cambria, "Times New Roman", serif;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top, 0px);
+  padding-bottom:env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#17181a; --ink:#f0f0f0; --muted:#b9b9b9; --accent:#f08d3e; --accent-text:#f6a866;
+    --tint:#3d2814; --dot:#3a3c40; --panel:#222427; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#17181a; --ink:#f0f0f0; --muted:#b9b9b9; --accent:#f08d3e; --accent-text:#f6a866;
+  --tint:#3d2814; --dot:#3a3c40; --panel:#222427; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top, 0px)}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:1.0625rem;line-height:1.55}
+main{max-width:47rem;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-family:var(--math);font-weight:600;font-size:clamp(2rem,6vw,2.9rem);line-height:1.1;margin:.2rem 0 .6rem;letter-spacing:-.01em}
+h2{font-family:var(--math);font-weight:600;font-size:1.65rem;line-height:1.2;margin:3rem 0 .75rem;padding-top:1rem;border-top:3px solid var(--ink)}
+h3{font-size:1.1rem;margin:1.6rem 0 .5rem}
+p{margin:.6rem 0}
+.course{color:var(--muted);margin:0;font-size:.95rem}
+.lede{font-size:1.15rem;max-width:38rem}
+var{font-family:var(--math);font-style:italic;font-size:1.08em}
+sub{font-size:.68em;line-height:0}
+.m{font-family:var(--math);font-size:1.08em;white-space:nowrap}
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 .2em;line-height:1.25}
+.frac>span:first-child{border-bottom:1.6px solid currentColor;padding:0 .25em}
+.frac>span:last-child{padding:0 .25em}
+
+/* Hero T-chart: the page's signature */
+.hero{margin:1.6rem 0 1rem;display:grid;grid-template-columns:1fr 1fr;font-family:var(--math)}
+.hero div{text-align:center;padding:.4rem .5rem}
+.hero .hx,.hero .hy{font-style:italic;font-weight:600;font-size:clamp(2.2rem,8vw,3.4rem);line-height:1;color:var(--accent-text);border-bottom:5px solid var(--accent);padding-bottom:.6rem}
+.hero .hx,.hero .bx{border-right:5px solid var(--accent)}
+.hero .bx,.hero .by{font-size:clamp(1.4rem,4.6vw,2rem);padding:1.1rem .5rem 1.4rem}
+
+/* Static vs dynamic */
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0}
+.pair>div{border:2px solid var(--ink);border-radius:8px;padding:.9rem 1rem}
+.pair h3{margin:0 0 .3rem}
+.pair p{margin:.3rem 0;font-size:.98rem}
+.law{border-left:5px solid var(--accent);background:var(--panel);padding:.8rem 1rem;margin:1rem 0}
+.law p{margin:.25rem 0}
+
+/* Method */
+ol.method{padding-left:0;list-style:none;counter-reset:m;margin:1rem 0}
+ol.method li{counter-increment:m;position:relative;padding:.45rem 0 .45rem 2.8rem;border-bottom:1px solid var(--dot)}
+ol.method li::before{content:counter(m);position:absolute;left:0;top:.4rem;width:2rem;height:2rem;border:2px solid var(--ink);border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:.95rem}
+.comp{display:grid;grid-template-columns:minmax(0,320px) 1fr;gap:1.25rem;align-items:center;margin:1rem 0}
+
+/* Diagrams */
+.figs{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0;align-items:end}
+figure{margin:0}
+figcaption{font-size:.85rem;color:var(--muted);text-align:center;margin-top:.2rem}
+svg.dia{width:100%;height:auto;display:block;color:var(--ink)}
+svg.dia .s{stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round}
+svg.dia .thin{stroke-width:1.6}
+svg.dia .dash{stroke-dasharray:6 5}
+svg.dia .ref{stroke-dasharray:5 5;stroke-width:1.5}
+svg.dia .fp{fill:var(--paper)}
+svg.dia .fi{fill:currentColor}
+svg.dia text{fill:currentColor;font-family:var(--math);font-size:16px}
+svg.dia text.lab{font-family:var(--sans);font-size:14px}
+svg.dia .it{font-style:italic}
+
+.problem{border:2px solid var(--ink);border-radius:8px;padding:.8rem 1rem;margin:1rem 0}
+.problem p{margin:.2rem 0}
+
+/* T-chart */
+.tchart{position:relative;display:grid;grid-template-columns:1fr 1fr;margin:1.2rem 0 .6rem;padding:.6rem 0 1rem;border-radius:8px;
+  background-color:var(--paper);background-image:radial-gradient(var(--dot) 1.1px, transparent 1.4px);background-size:22px 22px}
+.tchart .th{text-align:center;font-family:var(--math);font-style:italic;font-weight:600;font-size:1.9rem;line-height:1;color:var(--accent-text);padding-bottom:.45rem;border-bottom:3px solid var(--accent)}
+.tchart .th.x,.tchart .col.x{border-right:3px solid var(--accent)}
+.tchart .col{display:flex;flex-direction:column;align-items:center;gap:.4rem;padding:.8rem clamp(.3rem,2vw,1rem) 0;min-width:0}
+.ln{position:relative;margin:0;padding:.2rem .5rem;border-radius:5px;text-align:center;font-family:var(--math);font-size:clamp(1rem,2.7vw,1.22rem);line-height:1.5;transition:background-color .25s}
+.ln.hid{visibility:hidden}
+.ln.now{background:var(--tint)}
+.ln.ans{border:2.5px solid var(--ink);font-weight:600;padding:.3rem .8rem;margin-top:.2rem}
+.ln.hint{font-family:var(--sans);font-size:.82rem;line-height:1.35;color:var(--muted);border:1.5px dashed var(--muted);max-width:14rem}
+.ln .tag{display:block;font-family:var(--sans);font-size:.75rem;color:var(--accent-text);line-height:1.2}
+.carry{font-weight:600;text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:3px;text-underline-offset:4px}
+svg.arrows{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+svg.arrows path{fill:none;stroke:var(--accent);stroke-width:3;stroke-linecap:round}
+
+.narr{border-left:5px solid var(--accent);background:var(--panel);padding:.7rem 1rem;min-height:4.6rem;margin:.4rem 0 .7rem}
+.ctrl{display:flex;flex-wrap:wrap;gap:.5rem}
+button{font:inherit;font-size:.95rem;font-weight:700;color:var(--ink);background:var(--paper);border:2px solid var(--ink);border-radius:6px;padding:.45rem .95rem;cursor:pointer}
+button.primary{background:var(--accent);border-color:var(--accent);color:#000}
+button:disabled{opacity:.4;cursor:default}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.print-notes,.print-only{display:none}
+
+/* Mistakes */
+.mistakes{margin:1rem 0;padding:0;list-style:none}
+.mistakes li{padding:.6rem 0 .6rem 1rem;border-left:3px solid var(--ink);margin:.6rem 0}
+.mistakes strong{display:block}
+
+/* Practice */
+.practice{margin:2rem 0}
+.work{display:grid;grid-template-columns:1fr;gap:.6rem;margin:.8rem 0}
+.fbd-box{border:2px dashed var(--muted);border-radius:8px;min-height:6rem;padding:.4rem .7rem;font-size:.85rem;color:var(--muted)}
+.tchart.blank{min-height:9rem}
+.solution{margin-top:.6rem}
+.solution .tchart{margin-top:.6rem}
+.solnote{font-size:.95rem}
+.kind{font-weight:700}
+
+@media (max-width:620px){
+  .pair,.figs,.comp{grid-template-columns:1fr}
+  .comp svg{max-width:320px}
+}
+@media (prefers-reduced-motion: reduce){ .ln{transition:none} }
+
+@media print{
+  :root, :root:not([data-theme="light"]), :root[data-theme="dark"]{
+    --paper:#fff; --ink:#000; --muted:#333; --accent:#000; --accent-text:#000; --tint:transparent; --dot:transparent; --panel:#fff; color-scheme:light;
+  }
+  @page{margin:.6in}
+  body{font-size:11pt;line-height:1.45}
+  main{max-width:none;padding:0}
+  h1{font-size:24pt}
+  h2{font-size:16pt;margin-top:1.2rem}
+  .hero{margin:.6rem 0}
+  .hero .hx,.hero .hy{font-size:28pt;border-bottom-width:3px}
+  .hero .hx,.hero .bx{border-right-width:3px}
+  .hero .bx,.hero .by{font-size:17pt;padding:.6rem}
+  .ctrl,.narr,svg.arrows,.reveal,.solution{display:none !important}
+  .ln.hid{visibility:visible !important}
+  .ln[data-s]::after{content:attr(data-s);position:absolute;top:-.45em;right:-.9em;font:700 7pt var(--sans);border:1px solid #000;border-radius:50%;width:1.5em;height:1.5em;display:grid;place-items:center;background:#fff}
+  .ln.ans{border-width:2pt}
+  .carry{text-decoration-thickness:2px}
+  .tchart .th{border-bottom-width:2pt}
+  .tchart .th.x,.tchart .col.x{border-right-width:2pt}
+  .print-notes{display:block;font-size:9.5pt;margin:.3rem 0 0;padding-left:1.4rem;columns:2;column-gap:1.4rem}
+  .print-notes li{break-inside:avoid;margin-bottom:.2rem}
+  .print-only{display:block}
+  .example,.practice-section,#key{break-before:page}
+  .practice{break-inside:avoid}
+  .fbd-box{min-height:2.2in}
+  .tchart.blank{min-height:3in}
+  .figs,.problem,.tchart,.pair,.comp{break-inside:avoid}
+  .law{border-left-width:3pt}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute;color:var(--ink)" aria-hidden="true" focusable="false">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="13" markerHeight="13" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+    </marker>
+    <marker id="ahc" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" style="fill:var(--accent)"/>
+    </marker>
+    <pattern id="hatch" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="7" stroke="currentColor" stroke-width="1.4"/>
+    </pattern>
+  </defs>
+</svg>
+
+<main>
+<header>
+  <p class="course">AP Physics 1, Forces</p>
+  <h1>Solving equilibrium problems, one axis at a time</h1>
+  <p class="lede">Every equilibrium problem gets the same start: split the page into an <var>x</var>-column and a <var>y</var>-column, and write the zero-sum at the top of each.</p>
+  <div class="hero" aria-label="T-chart: x-column starts with sum of F x equals zero, y-column starts with sum of F y equals zero">
+    <div class="hx">x</div><div class="hy">y</div>
+    <div class="bx">Σ<var>F</var><sub>x</sub> = 0</div><div class="by">Σ<var>F</var><sub>y</sub> = 0</div>
+  </div>
+  <p>In this class we use <span class="m"><var>g</var> = 10 m/s²</span>, so the weight of an object is <span class="m"><var>F</var><sub>g</sub> = <var>mg</var></span>. A 4.00 kg object weighs 40.0 N.</p>
+</header>
+
+<section>
+  <h2>What equilibrium means</h2>
+  <div class="law">
+    <p><strong>Newton’s first law:</strong> an object keeps its velocity (stays at rest, or keeps moving at the same speed in the same direction) unless a net force acts on it.</p>
+    <p>So if the velocity isn’t changing, <span class="m"><var>a</var> = 0</span> and the net force is zero: <span class="m">Σ<var>F</var><sub>x</sub> = 0</span> and <span class="m">Σ<var>F</var><sub>y</sub> = 0</span>.</p>
+  </div>
+  <div class="pair">
+    <div>
+      <h3>Static equilibrium</h3>
+      <p>The object is at rest and stays at rest: <span class="m"><var>v</var> = 0</span>.</p>
+      <p>Clue words: <em>hangs, is suspended, at rest, held in place.</em></p>
+      <p>Examples: a hanging sign, a knot joining ropes, a book on a table.</p>
+    </div>
+    <div>
+      <h3>Dynamic equilibrium</h3>
+      <p>The object moves at constant velocity: same speed, straight line.</p>
+      <p>Clue words: <em>constant velocity, constant speed, steady, terminal velocity.</em></p>
+      <p>Examples: a crate pulled at steady speed, a skydiver at terminal velocity.</p>
+    </div>
+  </div>
+  <p>The math for both is identical. Moving at constant velocity is <em>not</em> a reason for a net force.</p>
+</section>
+
+<section>
+  <h2>The method</h2>
+  <ol class="method">
+    <li><strong>Sketch the situation and list what you know.</strong> Convert mass to weight right away: <span class="m"><var>F</var><sub>g</sub> = <var>mg</var></span>.</li>
+    <li><strong>Draw a free-body diagram.</strong> One dot or box for the object, and an arrow for every force acting on it, tails on the object.</li>
+    <li><strong>Break every angled force into components.</strong> Draw the <var>x</var>-part and <var>y</var>-part as dashed arrows.</li>
+    <li><strong>Draw the T-chart.</strong> Label the columns <var>x</var> and <var>y</var>. Start them with <span class="m">Σ<var>F</var><sub>x</sub> = 0</span> and <span class="m">Σ<var>F</var><sub>y</sub> = 0</span>.</li>
+    <li><strong>Write out each sum.</strong> Right and up are positive; left and down are negative. A force only goes in a column if it has a part along that axis.</li>
+    <li><strong>Swap each component for its trig form,</strong> such as <span class="m"><var>F</var> cos θ</span> or <span class="m"><var>F</var> sin θ</span>.</li>
+    <li><strong>Solve the column that has only one unknown.</strong> Box the answer.</li>
+    <li><strong>Carry that answer across to the other column</strong> and solve it. Box that answer too.</li>
+    <li><strong>Check that the answers make sense.</strong> Are they positive? Is a rope pulling at an angle stronger than the weight it holds up?</li>
+  </ol>
+
+  <h3>Breaking a force into components</h3>
+  <div class="comp">
+    <svg class="dia" viewBox="0 0 320 185" role="img" aria-label="A force F at angle theta above the horizontal, with its horizontal component F cos theta and vertical component F sin theta drawn as dashed arrows">
+      <line class="s dash thin" x1="40" y1="150" x2="200" y2="150" marker-end="url(#ah)"/>
+      <line class="s dash thin" x1="200" y1="150" x2="200" y2="32" marker-end="url(#ah)"/>
+      <path class="s thin" d="M188,150 L188,138 L200,138"/>
+      <line class="s" x1="40" y1="150" x2="200" y2="30" marker-end="url(#ah)"/>
+      <path class="s thin" d="M80,150 A40,40 0 0 0 72,126"/>
+      <text x="86" y="143" class="it">θ</text>
+      <text x="108" y="82" text-anchor="end" class="it">F</text>
+      <text x="120" y="174" text-anchor="middle"><tspan class="it">F</tspan> cos <tspan class="it">θ</tspan></text>
+      <text x="210" y="96"><tspan class="it">F</tspan> sin <tspan class="it">θ</tspan></text>
+      <circle class="fi" cx="40" cy="150" r="4"/>
+    </svg>
+    <div>
+      <p>When θ is measured from the <strong>horizontal</strong>:</p>
+      <p class="m" style="font-size:1.2rem"><var>F</var><sub>x</sub> = <var>F</var> cos θ<br><var>F</var><sub>y</sub> = <var>F</var> sin θ</p>
+      <p>If a problem measures θ from the <strong>vertical</strong>, the two swap. Always check which side of the triangle the angle touches: the side it touches gets cos.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EXAMPLE 1: STATIC ============ -->
+<section class="example" data-stepper="ex1">
+  <h2>Example 1: static equilibrium</h2>
+  <div class="problem">
+    <p>A 4.00 kg sign hangs from a knot. Rope 2 pulls the knot horizontally toward a wall on the left. Rope 1 pulls up and to the right at 35° above the horizontal. Find the tension in each rope.</p>
+  </div>
+  <div class="figs">
+    <figure>
+      <svg class="dia" viewBox="0 0 360 235" role="img" aria-label="A knot held by a horizontal rope to a left wall and a rope rising to the right at 35 degrees; a 4.00 kilogram sign hangs below">
+        <rect x="6" y="100" width="14" height="80" fill="url(#hatch)"/>
+        <line class="s thin" x1="20" y1="100" x2="20" y2="180"/>
+        <rect x="262" y="16" width="70" height="15" fill="url(#hatch)"/>
+        <line class="s thin" x1="262" y1="31" x2="332" y2="31"/>
+        <line class="s" x1="20" y1="140" x2="140" y2="140"/>
+        <line class="s" x1="140" y1="140" x2="295.6" y2="31"/>
+        <line class="s ref" x1="140" y1="140" x2="235" y2="140"/>
+        <path class="s thin" d="M180,140 A40,40 0 0 0 172.8,117.1"/>
+        <text x="186" y="131" font-size="14">35°</text>
+        <line class="s" x1="140" y1="147" x2="140" y2="185"/>
+        <rect class="s fp" x="105" y="185" width="70" height="40"/>
+        <text x="140" y="210" text-anchor="middle" class="lab">4.00 kg</text>
+        <circle class="s fp" cx="140" cy="140" r="7"/>
+        <text x="200" y="80" text-anchor="end"><tspan class="it">T</tspan><tspan dy="4" font-size="11">1</tspan><tspan dy="-4"> = ?</tspan></text>
+        <text x="80" y="128" text-anchor="middle"><tspan class="it">T</tspan><tspan dy="4" font-size="11">2</tspan><tspan dy="-4"> = ?</tspan></text>
+      </svg>
+      <figcaption>The situation</figcaption>
+    </figure>
+    <figure>
+      <svg class="dia" viewBox="0 0 300 250" role="img" aria-label="Free-body diagram of the knot: T1 up and right with dashed components T1x right and T1y up, T2 left, Fg 40.0 newtons down">
+        <line class="s dash thin" x1="150" y1="120" x2="240" y2="120" marker-end="url(#ah)"/>
+        <line class="s dash thin" x1="240" y1="120" x2="240" y2="58" marker-end="url(#ah)"/>
+        <line class="s" x1="150" y1="120" x2="240" y2="57" marker-end="url(#ah)"/>
+        <line class="s" x1="150" y1="120" x2="60" y2="120" marker-end="url(#ah)"/>
+        <line class="s" x1="150" y1="120" x2="150" y2="215" marker-end="url(#ah)"/>
+        <circle class="fi" cx="150" cy="120" r="6"/>
+        <text x="196" y="76" text-anchor="end"><tspan class="it">T</tspan><tspan dy="4" font-size="11">1</tspan></text>
+        <text x="196" y="140" text-anchor="middle"><tspan class="it">T</tspan><tspan dy="4" font-size="11">1x</tspan></text>
+        <text x="248" y="94"><tspan class="it">T</tspan><tspan dy="4" font-size="11">1y</tspan></text>
+        <text x="80" y="110" text-anchor="middle"><tspan class="it">T</tspan><tspan dy="4" font-size="11">2</tspan></text>
+        <text x="160" y="214"><tspan class="it">F</tspan><tspan dy="4" font-size="11">g</tspan><tspan dy="-4"> = 40.0 N</tspan></text>
+      </svg>
+      <figcaption>Free-body diagram of the knot</figcaption>
+    </figure>
+  </div>
+
+  <div class="tchart">
+    <div class="th x">x</div><div class="th y">y</div>
+    <div class="col x">
+      <p class="ln" data-s="1">Σ<var>F</var><sub>x</sub> = 0</p>
+      <p class="ln" data-s="2"><var>T</var><sub>1x</sub> − <var>T</var><sub>2</sub> = 0</p>
+      <p class="ln" data-s="4"><var>T</var><sub>1</sub> cos θ − <var>T</var><sub>2</sub> = 0</p>
+      <p class="ln" data-s="8"><span class="carry" data-from="e1-t1">69.7</span> cos 35° − <var>T</var><sub>2</sub> = 0<span class="tag"><var>T</var><sub>1</sub> carried from the <var>y</var>-column</span></p>
+      <p class="ln" data-s="9"><var>T</var><sub>2</sub> = 69.7 cos 35°</p>
+      <p class="ln ans" data-s="10"><var>T</var><sub>2</sub> = 57.1 N</p>
+    </div>
+    <div class="col y">
+      <p class="ln" data-s="1">Σ<var>F</var><sub>y</sub> = 0</p>
+      <p class="ln" data-s="3"><var>T</var><sub>1y</sub> − <var>F</var><sub>g</sub> = 0</p>
+      <p class="ln" data-s="4"><var>T</var><sub>1</sub> sin θ − <var>F</var><sub>g</sub> = 0</p>
+      <p class="ln hint" data-s="5">Only one unknown here. Solve this column first.</p>
+      <p class="ln" data-s="6"><var>T</var><sub>1</sub> = <span class="frac"><span><var>F</var><sub>g</sub></span><span>sin θ</span></span> = <span class="frac"><span>40.0</span><span>sin 35°</span></span></p>
+      <p class="ln ans" data-s="7" id="e1-t1"><var>T</var><sub>1</sub> = 69.7 N</p>
+    </div>
+    <svg class="arrows" aria-hidden="true"></svg>
+  </div>
+  <div class="narr" aria-live="polite"></div>
+  <div class="ctrl">
+    <button type="button" data-act="prev">Previous</button>
+    <button type="button" class="primary" data-act="next">Next step</button>
+    <button type="button" data-act="all">Show all</button>
+    <button type="button" data-act="reset">Start over</button>
+  </div>
+  <ol class="print-notes"></ol>
+</section>
+
+<!-- ============ EXAMPLE 2: DYNAMIC ============ -->
+<section class="example" data-stepper="ex2">
+  <h2>Example 2: dynamic equilibrium</h2>
+  <div class="problem">
+    <p>A 4.00 kg crate is pulled across a rough floor at <strong>constant velocity</strong> by a rope angled 30° above the horizontal. Friction on the crate is 18.0 N. Find the applied force <var>F</var><sub>A</sub> and the normal force <var>F</var><sub>N</sub>.</p>
+  </div>
+  <div class="figs">
+    <figure>
+      <svg class="dia" viewBox="0 0 360 200" role="img" aria-label="A 4.00 kilogram crate on a floor pulled to the right by a rope at 30 degrees; friction of 18.0 newtons points left; the crate moves at constant velocity">
+        <rect x="20" y="150" width="320" height="10" fill="url(#hatch)"/>
+        <line class="s thin" x1="20" y1="150" x2="340" y2="150"/>
+        <rect class="s fp" x="140" y="100" width="80" height="50"/>
+        <text x="180" y="130" text-anchor="middle" class="lab">4.00 kg</text>
+        <line class="s" x1="220" y1="125" x2="297.9" y2="80" marker-end="url(#ah)"/>
+        <line class="s ref" x1="220" y1="125" x2="290" y2="125"/>
+        <path class="s thin" d="M255,125 A35,35 0 0 0 250.3,107.5"/>
+        <text x="262" y="119" font-size="13">30°</text>
+        <text x="302" y="78"><tspan class="it">F</tspan><tspan dy="4" font-size="11">A</tspan></text>
+        <line class="s" x1="140" y1="125" x2="70" y2="125" marker-end="url(#ah)"/>
+        <text x="22" y="114"><tspan class="it">F</tspan><tspan dy="4" font-size="11">f</tspan><tspan dy="-4"> = 18.0 N</tspan></text>
+        <text x="180" y="72" text-anchor="middle" class="lab">constant velocity</text>
+        <line class="s thin" x1="150" y1="84" x2="210" y2="84" marker-end="url(#ah)"/>
+      </svg>
+      <figcaption>The situation</figcaption>
+    </figure>
+    <figure>
+      <svg class="dia" viewBox="0 0 300 250" role="img" aria-label="Free-body diagram of the crate: FN up, Fg 40.0 newtons down, friction 18.0 newtons left, FA up and right at 30 degrees with dashed components FAx right and FAy up">
+        <rect class="s fp" x="130" y="110" width="40" height="40"/>
+        <line class="s" x1="150" y1="110" x2="150" y2="35" marker-end="url(#ah)"/>
+        <line class="s" x1="150" y1="150" x2="150" y2="225" marker-end="url(#ah)"/>
+        <line class="s" x1="130" y1="130" x2="45" y2="130" marker-end="url(#ah)"/>
+        <line class="s dash thin" x1="150" y1="130" x2="245" y2="130" marker-end="url(#ah)"/>
+        <line class="s dash thin" x1="245" y1="130" x2="245" y2="77" marker-end="url(#ah)"/>
+        <line class="s" x1="150" y1="130" x2="245.3" y2="75" marker-end="url(#ah)"/>
+        <circle class="fi" cx="150" cy="130" r="4"/>
+        <text x="160" y="44"><tspan class="it">F</tspan><tspan dy="4" font-size="11">N</tspan></text>
+        <text x="160" y="216"><tspan class="it">F</tspan><tspan dy="4" font-size="11">g</tspan><tspan dy="-4"> = 40.0 N</tspan></text>
+        <text x="86" y="120" text-anchor="middle"><tspan class="it">F</tspan><tspan dy="4" font-size="11">f</tspan><tspan dy="-4"> = 18.0 N</tspan></text>
+        <text x="200" y="86" text-anchor="end"><tspan class="it">F</tspan><tspan dy="4" font-size="11">A</tspan></text>
+        <text x="205" y="150" text-anchor="middle"><tspan class="it">F</tspan><tspan dy="4" font-size="11">Ax</tspan></text>
+        <text x="253" y="106"><tspan class="it">F</tspan><tspan dy="4" font-size="11">Ay</tspan></text>
+      </svg>
+      <figcaption>Free-body diagram of the crate</figcaption>
+    </figure>
+  </div>
+
+  <div class="tchart">
+    <div class="th x">x</div><div class="th y">y</div>
+    <div class="col x">
+      <p class="ln" data-s="1">Σ<var>F</var><sub>x</sub> = 0</p>
+      <p class="ln" data-s="2"><var>F</var><sub>Ax</sub> − <var>F</var><sub>f</sub> = 0</p>
+      <p class="ln" data-s="4"><var>F</var><sub>A</sub> cos θ − <var>F</var><sub>f</sub> = 0</p>
+      <p class="ln hint" data-s="5">Only one unknown here. Solve this column first.</p>
+      <p class="ln" data-s="6"><var>F</var><sub>A</sub> = <span class="frac"><span><var>F</var><sub>f</sub></span><span>cos θ</span></span> = <span class="frac"><span>18.0</span><span>cos 30°</span></span></p>
+      <p class="ln ans" data-s="7" id="e2-fa"><var>F</var><sub>A</sub> = 20.8 N</p>
+    </div>
+    <div class="col y">
+      <p class="ln" data-s="1">Σ<var>F</var><sub>y</sub> = 0</p>
+      <p class="ln" data-s="3"><var>F</var><sub>N</sub> + <var>F</var><sub>Ay</sub> − <var>F</var><sub>g</sub> = 0</p>
+      <p class="ln" data-s="4"><var>F</var><sub>N</sub> + <var>F</var><sub>A</sub> sin θ − <var>F</var><sub>g</sub> = 0</p>
+      <p class="ln" data-s="8"><var>F</var><sub>N</sub> = <var>F</var><sub>g</sub> − <var>F</var><sub>A</sub> sin θ</p>
+      <p class="ln" data-s="9"><var>F</var><sub>N</sub> = 40.0 − <span class="carry" data-from="e2-fa">20.8</span> sin 30°<span class="tag"><var>F</var><sub>A</sub> carried from the <var>x</var>-column</span></p>
+      <p class="ln ans" data-s="10"><var>F</var><sub>N</sub> = 29.6 N</p>
+    </div>
+    <svg class="arrows" aria-hidden="true"></svg>
+  </div>
+  <div class="narr" aria-live="polite"></div>
+  <div class="ctrl">
+    <button type="button" data-act="prev">Previous</button>
+    <button type="button" class="primary" data-act="next">Next step</button>
+    <button type="button" data-act="all">Show all</button>
+    <button type="button" data-act="reset">Start over</button>
+  </div>
+  <ol class="print-notes"></ol>
+</section>
+
+<section>
+  <h2>Common mistakes</h2>
+  <ul class="mistakes">
+    <li><strong>Assuming <span class="m"><var>F</var><sub>N</sub> = <var>F</var><sub>g</sub></span> every time.</strong> That’s only true when nothing else pushes or pulls vertically. A rope pulling up makes <var>F</var><sub>N</sub> smaller; a push angled down makes it bigger.</li>
+    <li><strong>Dropping the minus sign.</strong> Any arrow pointing left or down gets a minus sign when you write the sum.</li>
+    <li><strong>Putting a whole angled force in one column.</strong> An angled force never goes in a column by itself. Only its components do.</li>
+    <li><strong>Mixing up sin and cos.</strong> Look at where the angle is measured. The side of the triangle the angle touches gets cos.</li>
+    <li><strong>Calculator in radian mode.</strong> Quick test: sin 30° should give 0.5.</li>
+    <li><strong>Rounding too early.</strong> Keep the full number in your calculator when you carry it across. Round only the final boxed answers to three significant figures.</li>
+  </ul>
+</section>
+
+<!-- ============ PRACTICE ============ -->
+<section class="practice-section">
+  <h2>Practice</h2>
+  <p>For each problem: decide whether it’s static or dynamic, draw the free-body diagram, then set up your T-chart. The first line of each column is already written for you.</p>
+
+  <div class="practice">
+    <h3>Practice 1</h3>
+    <div class="problem">
+      <p>A 6.00 kg lantern hangs from a knot. Rope 1 pulls the knot up and to the left at 50° above the horizontal. Rope 2 runs horizontally to a wall on the right. Find <var>T</var><sub>1</sub> and <var>T</var><sub>2</sub>.</p>
+    </div>
+    <svg class="dia" viewBox="0 0 360 235" style="max-width:360px;margin:0 auto" role="img" aria-label="A knot held by a rope rising to the upper left at 50 degrees and a horizontal rope to a right wall; a 6.00 kilogram lantern hangs below">
+      <rect x="70" y="10" width="70" height="15" fill="url(#hatch)"/>
+      <line class="s thin" x1="70" y1="25" x2="140" y2="25"/>
+      <rect x="340" y="100" width="14" height="80" fill="url(#hatch)"/>
+      <line class="s thin" x1="340" y1="100" x2="340" y2="180"/>
+      <line class="s" x1="200" y1="140" x2="103.6" y2="25.1"/>
+      <line class="s" x1="200" y1="140" x2="340" y2="140"/>
+      <line class="s ref" x1="200" y1="140" x2="110" y2="140"/>
+      <path class="s thin" d="M160,140 A40,40 0 0 1 174.3,109.4"/>
+      <text x="146" y="128" text-anchor="middle" font-size="14">50°</text>
+      <line class="s" x1="200" y1="147" x2="200" y2="185"/>
+      <rect class="s fp" x="165" y="185" width="70" height="40"/>
+      <text x="200" y="210" text-anchor="middle" class="lab">6.00 kg</text>
+      <circle class="s fp" cx="200" cy="140" r="7"/>
+      <text x="162" y="70"><tspan class="it">T</tspan><tspan dy="4" font-size="11">1</tspan><tspan dy="-4"> = ?</tspan></text>
+      <text x="270" y="128" text-anchor="middle"><tspan class="it">T</tspan><tspan dy="4" font-size="11">2</tspan><tspan dy="-4"> = ?</tspan></text>
+    </svg>
+    <div class="work">
+      <div class="fbd-box">Free-body diagram</div>
+      <div class="tchart blank">
+        <div class="th x">x</div><div class="th y">y</div>
+        <div class="col x"><p class="ln">Σ<var>F</var><sub>x</sub> = 0</p></div>
+        <div class="col y"><p class="ln">Σ<var>F</var><sub>y</sub> = 0</p></div>
+      </div>
+    </div>
+    <button type="button" class="reveal" aria-expanded="false">Show solution</button>
+    <div class="solution" hidden>
+      <p class="solnote"><span class="kind">Static equilibrium.</span> <span class="m"><var>F</var><sub>g</sub> = 60.0 N</span>. Rope 1 points left, so <var>T</var><sub>1x</sub> is negative this time. The <var>y</var>-column has one unknown, so solve it first.</p>
+      <div class="tchart">
+        <div class="th x">x</div><div class="th y">y</div>
+        <div class="col x">
+          <p class="ln">Σ<var>F</var><sub>x</sub> = 0</p>
+          <p class="ln"><var>T</var><sub>2</sub> − <var>T</var><sub>1x</sub> = 0</p>
+          <p class="ln"><var>T</var><sub>2</sub> − <var>T</var><sub>1</sub> cos θ = 0</p>
+          <p class="ln"><var>T</var><sub>2</sub> = <span class="carry">78.3</span> cos 50°</p>
+          <p class="ln ans"><var>T</var><sub>2</sub> = 50.3 N</p>
+        </div>
+        <div class="col y">
+          <p class="ln">Σ<var>F</var><sub>y</sub> = 0</p>
+          <p class="ln"><var>T</var><sub>1y</sub> − <var>F</var><sub>g</sub> = 0</p>
+          <p class="ln"><var>T</var><sub>1</sub> sin θ − <var>F</var><sub>g</sub> = 0</p>
+          <p class="ln"><var>T</var><sub>1</sub> = <span class="frac"><span>60.0</span><span>sin 50°</span></span></p>
+          <p class="ln ans"><var>T</var><sub>1</sub> = 78.3 N</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="practice">
+    <h3>Practice 2</h3>
+    <div class="problem">
+      <p>A child pulls an 8.00 kg sled across the snow at constant velocity. The rope is 20° above the horizontal, and the child pulls with 30.0 N. Find the friction force <var>F</var><sub>f</sub> and the normal force <var>F</var><sub>N</sub>.</p>
+    </div>
+    <svg class="dia" viewBox="0 0 360 200" style="max-width:360px;margin:0 auto" role="img" aria-label="An 8.00 kilogram sled on snow pulled right by a 30.0 newton rope at 20 degrees; unknown friction points left; constant velocity">
+      <rect x="20" y="150" width="320" height="10" fill="url(#hatch)"/>
+      <line class="s thin" x1="20" y1="150" x2="340" y2="150"/>
+      <rect class="s fp" x="140" y="100" width="80" height="50"/>
+      <text x="180" y="130" text-anchor="middle" class="lab">8.00 kg</text>
+      <line class="s" x1="220" y1="125" x2="304.6" y2="94.2" marker-end="url(#ah)"/>
+      <line class="s ref" x1="220" y1="125" x2="295" y2="125"/>
+      <path class="s thin" d="M255,125 A35,35 0 0 0 252.9,113"/>
+      <text x="268" y="120" font-size="12">20°</text>
+      <text x="234" y="86"><tspan class="it">F</tspan><tspan dy="4" font-size="11">A</tspan><tspan dy="-4"> = 30.0 N</tspan></text>
+      <line class="s" x1="140" y1="125" x2="70" y2="125" marker-end="url(#ah)"/>
+      <text x="40" y="114"><tspan class="it">F</tspan><tspan dy="4" font-size="11">f</tspan><tspan dy="-4"> = ?</tspan></text>
+      <text x="180" y="62" text-anchor="middle" class="lab">constant velocity</text>
+      <line class="s thin" x1="150" y1="74" x2="210" y2="74" marker-end="url(#ah)"/>
+    </svg>
+    <div class="work">
+      <div class="fbd-box">Free-body diagram</div>
+      <div class="tchart blank">
+        <div class="th x">x</div><div class="th y">y</div>
+        <div class="col x"><p class="ln">Σ<var>F</var><sub>x</sub> = 0</p></div>
+        <div class="col y"><p class="ln">Σ<var>F</var><sub>y</sub> = 0</p></div>
+      </div>
+    </div>
+    <button type="button" class="reveal" aria-expanded="false">Show solution</button>
+    <div class="solution" hidden>
+      <p class="solnote"><span class="kind">Dynamic equilibrium</span> (constant velocity). <span class="m"><var>F</var><sub>g</sub> = 80.0 N</span>. Since <var>F</var><sub>A</sub> is given, each column has just one unknown and nothing needs to be carried across.</p>
+      <div class="tchart">
+        <div class="th x">x</div><div class="th y">y</div>
+        <div class="col x">
+          <p class="ln">Σ<var>F</var><sub>x</sub> = 0</p>
+          <p class="ln"><var>F</var><sub>Ax</sub> − <var>F</var><sub>f</sub> = 0</p>
+          <p class="ln"><var>F</var><sub>A</sub> cos θ − <var>F</var><sub>f</sub> = 0</p>
+          <p class="ln"><var>F</var><sub>f</sub> = 30.0 cos 20°</p>
+          <p class="ln ans"><var>F</var><sub>f</sub> = 28.2 N</p>
+        </div>
+        <div class="col y">
+          <p class="ln">Σ<var>F</var><sub>y</sub> = 0</p>
+          <p class="ln"><var>F</var><sub>N</sub> + <var>F</var><sub>Ay</sub> − <var>F</var><sub>g</sub> = 0</p>
+          <p class="ln"><var>F</var><sub>N</sub> = <var>F</var><sub>g</sub> − <var>F</var><sub>A</sub> sin θ</p>
+          <p class="ln"><var>F</var><sub>N</sub> = 80.0 − 30.0 sin 20°</p>
+          <p class="ln ans"><var>F</var><sub>N</sub> = 69.7 N</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="practice">
+    <h3>Practice 3</h3>
+    <div class="problem">
+      <p>A student pushes a 5.00 kg box across the floor at constant velocity. The push is directed 30° <strong>below</strong> the horizontal, and friction on the box is 26.0 N. Find the push <var>F</var><sub>A</sub> and the normal force <var>F</var><sub>N</sub>.</p>
+    </div>
+    <svg class="dia" viewBox="0 0 360 200" style="max-width:360px;margin:0 auto" role="img" aria-label="A 5.00 kilogram box pushed to the right by a force angled 30 degrees below horizontal; friction of 26.0 newtons points left; constant velocity">
+      <rect x="20" y="150" width="320" height="10" fill="url(#hatch)"/>
+      <line class="s thin" x1="20" y1="150" x2="340" y2="150"/>
+      <rect class="s fp" x="160" y="100" width="80" height="50"/>
+      <text x="200" y="130" text-anchor="middle" class="lab">5.00 kg</text>
+      <line class="s" x1="82.1" y1="60" x2="160" y2="105" marker-end="url(#ah)"/>
+      <line class="s ref" x1="82.1" y1="60" x2="148" y2="60"/>
+      <path class="s thin" d="M117.1,60 A35,35 0 0 1 112.4,77.5"/>
+      <text x="124" y="76" font-size="13">30°</text>
+      <text x="26" y="50"><tspan class="it">F</tspan><tspan dy="4" font-size="11">A</tspan><tspan dy="-4"> = ?</tspan></text>
+      <line class="s" x1="160" y1="140" x2="95" y2="140" marker-end="url(#ah)"/>
+      <text x="20" y="131"><tspan class="it">F</tspan><tspan dy="4" font-size="11">f</tspan><tspan dy="-4"> = 26.0 N</tspan></text>
+      <text x="215" y="72" text-anchor="middle" class="lab">constant velocity</text>
+      <line class="s thin" x1="185" y1="84" x2="245" y2="84" marker-end="url(#ah)"/>
+    </svg>
+    <div class="work">
+      <div class="fbd-box">Free-body diagram</div>
+      <div class="tchart blank">
+        <div class="th x">x</div><div class="th y">y</div>
+        <div class="col x"><p class="ln">Σ<var>F</var><sub>x</sub> = 0</p></div>
+        <div class="col y"><p class="ln">Σ<var>F</var><sub>y</sub> = 0</p></div>
+      </div>
+    </div>
+    <button type="button" class="reveal" aria-expanded="false">Show solution</button>
+    <div class="solution" hidden>
+      <p class="solnote"><span class="kind">Dynamic equilibrium</span> (constant velocity). <span class="m"><var>F</var><sub>g</sub> = 50.0 N</span>. The push points down, so <var>F</var><sub>Ay</sub> gets a minus sign, and <var>F</var><sub>N</sub> ends up bigger than the weight because the push presses the box into the floor.</p>
+      <div class="tchart">
+        <div class="th x">x</div><div class="th y">y</div>
+        <div class="col x">
+          <p class="ln">Σ<var>F</var><sub>x</sub> = 0</p>
+          <p class="ln"><var>F</var><sub>Ax</sub> − <var>F</var><sub>f</sub> = 0</p>
+          <p class="ln"><var>F</var><sub>A</sub> cos θ − <var>F</var><sub>f</sub> = 0</p>
+          <p class="ln"><var>F</var><sub>A</sub> = <span class="frac"><span>26.0</span><span>cos 30°</span></span></p>
+          <p class="ln ans"><var>F</var><sub>A</sub> = 30.0 N</p>
+        </div>
+        <div class="col y">
+          <p class="ln">Σ<var>F</var><sub>y</sub> = 0</p>
+          <p class="ln"><var>F</var><sub>N</sub> − <var>F</var><sub>Ay</sub> − <var>F</var><sub>g</sub> = 0</p>
+          <p class="ln"><var>F</var><sub>N</sub> = <var>F</var><sub>g</sub> + <var>F</var><sub>A</sub> sin θ</p>
+          <p class="ln"><var>F</var><sub>N</sub> = 50.0 + <span class="carry">30.0</span> sin 30°</p>
+          <p class="ln ans"><var>F</var><sub>N</sub> = 65.0 N</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="key" class="print-only">
+  <h2>Answer key</h2>
+</section>
+</main>
+
+<script>
+const NOTES = {
+  ex1: [
+    "Start every problem the same way. The knot is at rest, so its acceleration is zero and the forces add to zero in each direction.",
+    "<var>x</var>-column: list every force that has an <var>x</var>-part. <var>T</var><sub>1x</sub> points right, so it’s positive. <var>T</var><sub>2</sub> points left, so it’s negative. <var>F</var><sub>g</sub> has no <var>x</var>-part, so it stays out.",
+    "<var>y</var>-column: <var>T</var><sub>1y</sub> points up (+) and <var>F</var><sub>g</sub> points down (−). <var>T</var><sub>2</sub> is purely horizontal, so it has no place in this column.",
+    "Replace each component with its trig form. The 35° is measured from the horizontal, so the <var>x</var>-part uses cos θ and the <var>y</var>-part uses sin θ.",
+    "Count unknowns. The <var>x</var>-column has two (<var>T</var><sub>1</sub> and <var>T</var><sub>2</sub>). The <var>y</var>-column has only <var>T</var><sub>1</sub>, so it can be solved now.",
+    "Move <var>F</var><sub>g</sub> to the other side, then divide by sin θ.",
+    "Box the answer: <var>T</var><sub>1</sub> = 69.7 N.",
+    "Carry <var>T</var><sub>1</sub> across to the <var>x</var>-column. Now that column has only one unknown left: <var>T</var><sub>2</sub>.",
+    "Move <var>T</var><sub>2</sub> to the other side of the equation.",
+    "Box it: <var>T</var><sub>2</sub> = 57.1 N. Reasonableness check: <var>T</var><sub>1</sub> is bigger than the 40.0 N weight because only part of <var>T</var><sub>1</sub> points up."
+  ],
+  ex2: [
+    "Constant velocity means <var>a</var> = 0, so this is still equilibrium. Same start as always: both sums equal zero.",
+    "<var>x</var>-column: <var>F</var><sub>Ax</sub> points right (+) and friction points left (−). <var>F</var><sub>N</sub> and <var>F</var><sub>g</sub> are vertical, so they stay out.",
+    "<var>y</var>-column: <var>F</var><sub>N</sub> and <var>F</var><sub>Ay</sub> point up (+); <var>F</var><sub>g</sub> points down (−). Friction is horizontal, so it stays out.",
+    "Replace each component with its trig form: <var>F</var><sub>Ax</sub> = <var>F</var><sub>A</sub> cos θ and <var>F</var><sub>Ay</sub> = <var>F</var><sub>A</sub> sin θ.",
+    "Count unknowns. The <var>x</var>-column has only <var>F</var><sub>A</sub>. The <var>y</var>-column has two (<var>F</var><sub>N</sub> and <var>F</var><sub>A</sub>), so start with <var>x</var> this time.",
+    "Move <var>F</var><sub>f</sub> to the other side, then divide by cos θ.",
+    "Box the answer: <var>F</var><sub>A</sub> = 20.8 N.",
+    "Back to the <var>y</var>-column. Get <var>F</var><sub>N</sub> by itself before plugging in numbers.",
+    "Carry <var>F</var><sub>A</sub> across from the <var>x</var>-column and substitute.",
+    "Box it: <var>F</var><sub>N</sub> = 29.6 N. Reasonableness check: <var>F</var><sub>N</sub> is less than the 40.0 N weight because the rope’s upward pull holds up part of the crate."
+  ]
+};
+
+function drawArrows(chart, cur){
+  const svg = chart.querySelector("svg.arrows");
+  if(!svg) return;
+  svg.innerHTML = "";
+  const box = chart.getBoundingClientRect();
+  if(!box.width) return;
+  svg.setAttribute("viewBox", `0 0 ${box.width} ${box.height}`);
+  chart.querySelectorAll("[data-from]").forEach(t => {
+    const line = t.closest(".ln");
+    if(+line.dataset.s > cur) return;
+    const src = document.getElementById(t.dataset.from);
+    if(!src) return;
+    const a = src.getBoundingClientRect(), b = t.getBoundingClientRect();
+    const toLeft = b.left + b.width/2 < a.left;
+    const sx = (toLeft ? a.left : a.right) - box.left;
+    const sy = a.top + a.height/2 - box.top;
+    const ex = b.left + b.width/2 - box.left;
+    const ey = b.bottom - box.top + 6;
+    const c1x = sx + (ex - sx) * 0.6;
+    const d = `M${sx},${sy} C${c1x},${sy} ${ex},${ey + 46} ${ex},${ey}`;
+    const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    p.setAttribute("d", d);
+    p.setAttribute("marker-end", "url(#ahc)");
+    svg.appendChild(p);
+  });
+}
+
+const steppers = [];
+document.querySelectorAll("[data-stepper]").forEach(wrap => {
+  const notes = NOTES[wrap.dataset.stepper];
+  const chart = wrap.querySelector(".tchart");
+  const lines = [...chart.querySelectorAll(".ln[data-s]")];
+  const max = Math.max(...lines.map(l => +l.dataset.s));
+  const narr = wrap.querySelector(".narr");
+  const btn = a => wrap.querySelector(`[data-act="${a}"]`);
+  let cur = 0;
+
+  const ol = wrap.querySelector(".print-notes");
+  notes.forEach(n => { const li = document.createElement("li"); li.innerHTML = n; ol.appendChild(li); });
+
+  function render(){
+    lines.forEach(l => {
+      const s = +l.dataset.s;
+      l.classList.toggle("hid", s > cur);
+      l.classList.toggle("now", s === cur);
+    });
+    narr.innerHTML = cur === 0
+      ? "Press <strong>Next step</strong> to build the solution one line at a time."
+      : `<strong>Step ${cur} of ${max}.</strong> ${notes[cur-1]}`;
+    btn("prev").disabled = cur === 0;
+    btn("next").disabled = cur === max;
+    btn("all").disabled = cur === max;
+    drawArrows(chart, cur);
+  }
+  wrap.querySelector(".ctrl").addEventListener("click", e => {
+    const act = e.target.closest("button")?.dataset.act;
+    if(act === "next") cur = Math.min(max, cur + 1);
+    else if(act === "prev") cur = Math.max(0, cur - 1);
+    else if(act === "all") cur = max;
+    else if(act === "reset") cur = 0;
+    else return;
+    render();
+  });
+  steppers.push(() => drawArrows(chart, cur));
+  render();
+});
+
+window.addEventListener("resize", () => steppers.forEach(f => f()));
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(() => steppers.forEach(f => f()));
+
+document.querySelectorAll(".practice").forEach((p, i) => {
+  const b = p.querySelector(".reveal"), sol = p.querySelector(".solution");
+  b.addEventListener("click", () => {
+    sol.hidden = !sol.hidden;
+    b.setAttribute("aria-expanded", String(!sol.hidden));
+    b.textContent = sol.hidden ? "Show solution" : "Hide solution";
+  });
+  const key = document.getElementById("key");
+  const h = document.createElement("h3");
+  h.textContent = `Practice ${i + 1}`;
+  const c = sol.cloneNode(true);
+  c.hidden = false;
+  c.classList.remove("solution");
+  key.appendChild(h);
+  key.appendChild(c);
+});
+</script>
+</body>
+</html>
