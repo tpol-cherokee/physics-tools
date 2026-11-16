@@ -262,6 +262,7 @@
   }
   table.compare td{padding:7px 8px; border-bottom:1px solid var(--grid-minor); font-family:"IBM Plex Mono",monospace;}
   table.compare td.eq{font-family:"Source Serif 4",serif; font-size:0.95rem;}
+  table.compare td.r2{white-space:nowrap;}
   .swatch{display:inline-block; width:11px; height:11px; border-radius:50%; margin-right:7px; vertical-align:middle;}
   .muted{color:var(--text-muted);}
 
@@ -421,7 +422,7 @@
       <table class="compare" id="compareTable">
         <caption>Best-fit comparison for the active dataset (y = a·f(x) + b; exponential: y = a·e^(b·x))</caption>
         <thead>
-          <tr><th></th><th>a</th><th>b</th><th>Equation</th></tr>
+          <tr><th></th><th>a</th><th>b</th><th>Equation</th><th title="Coefficient of determination: 1 = perfect fit, 0 = no better than the mean of y, negative = worse than the mean">R²</th></tr>
         </thead>
         <tbody></tbody>
       </table>
@@ -808,6 +809,34 @@
     return nat;
   }
 
+  // Coefficient of determination for a fit, measured on ALL valid points of the dataset
+  // in the same (linearized) space the fit is computed in: R² = 1 − SS_res / SS_tot.
+  // For every relationship except exponential this equals R² in the original y units;
+  // for exponential it is R² of ln(y) vs x (same convention as spreadsheet trendlines).
+  function rSquaredFor(ds, rel, raw){
+    if(!raw || raw.vertical || raw.slope === null || !isFinite(raw.slope) || !isFinite(raw.intercept)) return null;
+    var pts = ds.points.filter(function(p){
+      return isNum(p) && relXOk(rel, p.x) && relYOk(rel, p.y);
+    }).map(function(p){ return {X: rel.xT(p.x), Y: rel.yT(p.y)}; })
+      .filter(function(q){ return isFinite(q.X) && isFinite(q.Y); });
+    if(pts.length < 2) return null;
+    var mean = pts.reduce(function(s,q){ return s + q.Y; }, 0) / pts.length;
+    var ssTot = 0, ssRes = 0;
+    pts.forEach(function(q){
+      var r = q.Y - (raw.slope * q.X + raw.intercept);
+      ssRes += r * r;
+      ssTot += (q.Y - mean) * (q.Y - mean);
+    });
+    if(!(ssTot > 0)) return null;
+    return 1 - ssRes / ssTot;
+  }
+  function fmtR2(v){
+    if(v === null || !isFinite(v)) return null;
+    var t = v.toFixed(4);
+    if(t === "-0.0000") t = "0.0000";
+    return t.charAt(0) === "-" ? "\u2212" + t.slice(1) : t;
+  }
+
   function sampleCurvePath(rel, a, b){
     var N = 140;
     var segments = [];
@@ -1010,6 +1039,9 @@
       var bTd = document.createElement("td");
       var eqTd = document.createElement("td");
       eqTd.className = "eq";
+      var r2Td = document.createElement("td");
+      r2Td.className = "r2";
+      var r2Text = null;
 
       if(r.raw && r.raw.vertical){
         aTd.textContent = "undefined";
@@ -1021,13 +1053,16 @@
           aTd.textContent = fmt(nat.a) + unitForA(rel);
           bTd.textContent = fmt(nat.b) + unitForB(rel);
           eqTd.textContent = rel.eq(nat.a, nat.b, xVariableIn.value.trim() || "x", yVariableIn.value.trim() || "y");
+          r2Text = fmtR2(rSquaredFor(ds, rel, r.raw));
         } else {
           aTd.innerHTML = '<span class="muted">\u2014</span>';
           bTd.innerHTML = '<span class="muted">\u2014</span>';
           eqTd.innerHTML = '<span class="muted">' + (r.note || "\u2014") + '</span>';
         }
       }
-      tr.appendChild(aTd); tr.appendChild(bTd); tr.appendChild(eqTd);
+      if(r2Text !== null){ r2Td.textContent = r2Text; }
+      else { r2Td.innerHTML = '<span class="muted">\u2014</span>'; }
+      tr.appendChild(aTd); tr.appendChild(bTd); tr.appendChild(eqTd); tr.appendChild(r2Td);
       compareBody.appendChild(tr);
     });
   }
@@ -1402,6 +1437,8 @@
       rows.forEach(function(row, i){
         var cells = row.querySelectorAll("td");
         var equation = cells.length > 3 ? cells[3].textContent.trim() : "";
+        var r2 = cells.length > 4 ? cells[4].textContent.trim() : "";
+        if(r2 && r2 !== "\u2014") equation += "   (R\u00B2 = " + r2 + ")";
         ctx.fillText((cells[0] ? cells[0].textContent.trim() : "Fit") + ": " + equation, 55, 1005 + i*32, 1280);
       });
       var mime = format === "jpg" ? "image/jpeg" : "image/png";
