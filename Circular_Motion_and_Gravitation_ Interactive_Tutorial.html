@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Circular Motion and Gravitation: An Interactive Tutorial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#ffffff; --ink:#000000; --muted:#474747; --accent:#E87722; --accent-text:#9c4808;
+  --tint:#fde9d7; --dot:#cdcdcd; --panel:#f4f4f4;
+  --sans:"Atkinson Hyperlegible", Verdana, "Segoe UI", sans-serif;
+  --math:"STIX Two Text", "Cambria Math", Cambria, "Times New Roman", serif;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top, 0px);
+  padding-bottom:env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#17181a; --ink:#f0f0f0; --muted:#b9b9b9; --accent:#f08d3e; --accent-text:#f6a866;
+    --tint:#3d2814; --dot:#3a3c40; --panel:#222427; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#17181a; --ink:#f0f0f0; --muted:#b9b9b9; --accent:#f08d3e; --accent-text:#f6a866;
+  --tint:#3d2814; --dot:#3a3c40; --panel:#222427; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top, 0px);scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:1.0625rem;line-height:1.55}
+main{max-width:48rem;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-family:var(--math);font-weight:600;font-size:clamp(2rem,6vw,2.9rem);line-height:1.1;margin:.2rem 0 .6rem;letter-spacing:-.01em}
+h2{font-family:var(--math);font-weight:600;font-size:1.7rem;line-height:1.2;margin:3.2rem 0 .75rem;padding-top:1rem;border-top:3px solid var(--ink)}
+h3{font-size:1.1rem;margin:1.7rem 0 .5rem}
+p{margin:.6rem 0}
+a{color:var(--accent-text);text-underline-offset:3px}
+.course{color:var(--muted);margin:0;font-size:.95rem}
+.lede{font-size:1.15rem;max-width:38rem}
+var{font-family:var(--math);font-style:italic;font-size:1.08em}
+sub{font-size:.68em;line-height:0}
+.m{font-family:var(--math);font-size:1.08em;white-space:nowrap}
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 .2em;line-height:1.25}
+.frac>span:first-child{border-bottom:1.6px solid currentColor;padding:0 .25em}
+.frac>span:last-child{padding:0 .25em}
+
+/* Hero */
+.hero{margin:1.6rem 0 1rem;display:grid;grid-template-columns:1fr 1fr;font-family:var(--math)}
+.hero div{text-align:center;padding:.4rem .5rem}
+.hero .hx,.hero .hy{font-style:italic;font-weight:600;font-size:clamp(2.2rem,8vw,3.4rem);line-height:1;color:var(--accent-text);border-bottom:5px solid var(--accent);padding-bottom:.6rem}
+.hero .hx,.hero .bx{border-right:5px solid var(--accent)}
+.hero .bx,.hero .by{font-size:clamp(1.4rem,4.6vw,2rem);padding:1.1rem .5rem 1.4rem}
+
+/* Table of contents */
+.toc{border:2px solid var(--ink);border-radius:8px;padding:.8rem 1.1rem;margin:1.5rem 0}
+.toc p{margin:0 0 .3rem;font-weight:700}
+.toc ol{margin:0;padding-left:1.4rem;columns:2;column-gap:2rem}
+.toc li{margin:.15rem 0;break-inside:avoid}
+
+/* Cards */
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:.9rem;margin:1rem 0}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0}
+.card{border:2px solid var(--ink);border-radius:8px;padding:.9rem 1rem}
+.card h3{margin:0 0 .35rem}
+.card p{margin:.3rem 0;font-size:.98rem}
+.law{border-left:5px solid var(--accent);background:var(--panel);padding:.8rem 1rem;margin:1rem 0}
+.law p{margin:.3rem 0}
+
+/* Method */
+ol.method{padding-left:0;list-style:none;counter-reset:m;margin:1rem 0}
+ol.method li{counter-increment:m;position:relative;padding:.45rem 0 .45rem 2.8rem;border-bottom:1px solid var(--dot)}
+ol.method li::before{content:counter(m);position:absolute;left:0;top:.4rem;width:2rem;height:2rem;border:2px solid var(--ink);border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:.95rem}
+
+/* Diagrams */
+.figs{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0;align-items:end}
+figure{margin:0}
+figcaption{font-size:.85rem;color:var(--muted);text-align:center;margin-top:.2rem}
+svg.dia{width:100%;height:auto;display:block;color:var(--ink);overflow:visible}
+svg.dia .s{stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+svg.dia .thin{stroke-width:1.6}
+svg.dia .dash{stroke-dasharray:6 5}
+svg.dia .ref{stroke-dasharray:5 5;stroke-width:1.5}
+svg.dia .fp{fill:var(--paper)}
+svg.dia .fpan{fill:var(--panel)}
+svg.dia .fi{fill:currentColor}
+svg.dia text{fill:currentColor;font-family:var(--math);font-size:16px}
+svg.dia text.lab{font-family:var(--sans);font-size:14px}
+svg.dia .it{font-style:italic}
+.wide{max-width:420px;margin:0 auto}
+
+.problem{border:2px solid var(--ink);border-radius:8px;padding:.8rem 1rem;margin:1rem 0}
+.problem p{margin:.2rem 0}
+.forces{border:2px dashed var(--ink);border-radius:8px;padding:.7rem 1rem;margin:1rem 0}
+.forces p{margin:.15rem 0}
+.forces .ttl{font-weight:700;margin-bottom:.3rem}
+
+/* T-chart */
+.tchart{position:relative;display:grid;grid-template-columns:1fr 1fr;margin:1.2rem 0 .6rem;padding:.6rem 0 1rem;border-radius:8px;
+  background-color:var(--paper);background-image:radial-gradient(var(--dot) 1.1px, transparent 1.4px);background-size:22px 22px}
+.tchart .th{text-align:center;font-family:var(--math);font-style:italic;font-weight:600;font-size:1.9rem;line-height:1;color:var(--accent-text);padding-bottom:.45rem;border-bottom:3px solid var(--accent)}
+.tchart .th.sm{font-size:1.35rem;padding-top:.3rem}
+.tchart .th.word{font-family:var(--sans);font-style:normal;font-size:1.15rem;padding-top:.5rem}
+.tchart .th.x,.tchart .col.x{border-right:3px solid var(--accent)}
+.tchart .col{display:flex;flex-direction:column;align-items:center;gap:.4rem;padding:.8rem clamp(.3rem,2vw,1rem) 0;min-width:0}
+.ln{position:relative;margin:0;padding:.2rem .5rem;border-radius:5px;text-align:center;font-family:var(--math);font-size:clamp(1rem,2.7vw,1.2rem);line-height:1.5;transition:background-color .25s}
+.ln.hid{visibility:hidden}
+.ln.now{background:var(--tint)}
+.ln.ans{border:2.5px solid var(--ink);font-weight:600;padding:.3rem .8rem;margin-top:.2rem}
+.ln.hint{font-family:var(--sans);font-size:.82rem;line-height:1.35;color:var(--muted);border:1.5px dashed var(--muted);max-width:15rem}
+.ln .tag{display:block;width:fit-content;margin:0 auto;font-family:var(--sans);font-size:.75rem;color:var(--accent-text);line-height:1.2}
+.carry{font-weight:600;text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:3px;text-underline-offset:4px}
+svg.arrows{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+svg.arrows path{fill:none;stroke:var(--accent);stroke-width:3;stroke-linecap:round}
+
+.narr{border-left:5px solid var(--accent);background:var(--panel);padding:.7rem 1rem;min-height:4.6rem;margin:.4rem 0 .7rem}
+.ctrl,.pctrl,.seg{display:flex;flex-wrap:wrap;gap:.5rem}
+button{font:inherit;font-size:.95rem;font-weight:700;color:var(--ink);background:var(--paper);border:2px solid var(--ink);border-radius:6px;padding:.45rem .95rem;cursor:pointer}
+button.primary{background:var(--accent);border-color:var(--accent);color:#000}
+button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+button:disabled{opacity:.4;cursor:default}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.print-notes,.print-only{display:none}
+
+/* Explorers */
+.lab-box{border:3px solid var(--ink);border-radius:10px;padding:1rem;margin:1.4rem 0}
+.lab-box>h3{margin-top:0}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:.6rem 1.2rem;margin:.7rem 0}
+.controls label{display:flex;flex-direction:column;font-size:.92rem;font-weight:700;gap:.2rem}
+.controls output{font-family:var(--math);font-weight:400;font-size:1.05rem}
+input[type="range"]{width:100%;accent-color:var(--accent)}
+select{font:inherit;font-size:.95rem;padding:.3rem;border:2px solid var(--ink);border-radius:6px;background:var(--paper);color:var(--ink)}
+.readout{background:var(--panel);border-radius:8px;padding:.7rem 1rem;margin-top:.6rem}
+.readout p{margin:.2rem 0}
+.big{font-family:var(--math);font-size:1.6rem;font-weight:600}
+.verdict{font-weight:700;border-top:1.5px solid var(--dot);padding-top:.4rem;margin-top:.4rem}
+
+/* Sorter + MCQ */
+.sort-item{border-bottom:1px solid var(--dot);padding:.8rem 0}
+.sort-item p.q{margin:0 0 .5rem;font-weight:700}
+.sort-item .seg button{font-size:.88rem;padding:.35rem .7rem}
+.sort-item button.right{background:var(--ink);color:var(--paper)}
+.sort-item button.wrong{border-style:dashed;text-decoration:line-through}
+.fb{margin:.45rem 0 0;font-size:.95rem;min-height:1.2em}
+.score{font-weight:700;margin-top:.6rem}
+
+/* Mistakes */
+.mistakes{margin:1rem 0;padding:0;list-style:none}
+.mistakes li{padding:.5rem 0 .5rem 1rem;border-left:3px solid var(--ink);margin:.6rem 0}
+.mistakes strong{display:block}
+
+/* Video */
+.video{display:flex;gap:1rem;align-items:center;border:2px solid var(--ink);border-radius:8px;padding:.8rem 1rem;margin:1.2rem 0}
+.video .play{flex:none;width:3rem;height:3rem;border-radius:50%;background:var(--accent);display:grid;place-items:center}
+.video .play::after{content:"";border-left:14px solid #000;border-top:9px solid transparent;border-bottom:9px solid transparent;margin-left:4px}
+.video p{margin:.15rem 0}
+
+/* Practice */
+.prob{border-top:2px solid var(--ink);padding:1rem 0 .6rem}
+.prob h3{margin:0 0 .3rem;display:flex;flex-wrap:wrap;gap:.3rem .8rem;align-items:baseline}
+.ptype{font-weight:400;font-size:.85rem;color:var(--muted);border:1.5px solid var(--muted);border-radius:4px;padding:0 .4rem}
+.answers{display:flex;flex-wrap:wrap;gap:.6rem 1.4rem;margin:.6rem 0}
+.answers label{font-family:var(--math);font-size:1.1rem;display:flex;align-items:center;gap:.35rem}
+.answers input{font:inherit;font-family:var(--sans);font-size:1rem;width:6.5rem;padding:.3rem .45rem;border:2px solid var(--ink);border-radius:6px;background:var(--paper);color:var(--ink)}
+.answers input.ok{border-width:3px;background:var(--tint)}
+.answers input.no{border-style:dashed}
+.psol{border:2px solid var(--ink);border-radius:8px;padding:.6rem 1rem;margin:.6rem 0}
+.psol ol{margin:.3rem 0;padding:0}
+.psol svg.sol-fbd.two{max-width:600px}
+.psol svg.sol-fbd{max-width:420px;margin:.5rem auto .3rem}
+.psol li{margin:.25rem 0}
+.work .fbd-box{border:2px dashed var(--muted);border-radius:8px;min-height:2in;padding:.4rem .7rem;font-size:.85rem;color:var(--muted);margin:.5rem 0}
+.tchart.blank{min-height:2.6in}
+
+@media (max-width:640px){
+  .pair,.figs,.trio{grid-template-columns:1fr}
+  .toc ol{columns:1}
+}
+@media (prefers-reduced-motion: reduce){ .ln{transition:none} }
+
+@media print{
+  :root, :root:not([data-theme="light"]), :root[data-theme="dark"]{
+    --paper:#fff; --ink:#000; --muted:#333; --accent:#000; --accent-text:#000; --tint:transparent; --dot:transparent; --panel:#fff; color-scheme:light;
+  }
+  @page{margin:.6in}
+  html{scroll-behavior:auto}
+  body{font-size:11pt;line-height:1.45}
+  main{max-width:none;padding:0}
+  h1{font-size:24pt}
+  h2{font-size:16pt;margin-top:1rem}
+  .hero{margin:.6rem 0}
+  .hero .hx,.hero .hy{font-size:28pt;border-bottom-width:3px}
+  .hero .hx,.hero .bx{border-right-width:3px}
+  .hero .bx,.hero .by{font-size:17pt;padding:.6rem}
+  .ctrl,.narr,svg.arrows,.noprint,.pctrl,.answers,.fb,.psol{display:none !important}
+  .ln.hid{visibility:visible !important}
+  .ln[data-s]::after{content:attr(data-s);position:absolute;top:-.45em;right:-.9em;font:700 7pt var(--sans);border:1px solid #000;border-radius:50%;width:1.5em;height:1.5em;display:grid;place-items:center;background:#fff}
+  .ln.ans{border-width:2pt}
+  .tchart .th{border-bottom-width:2pt}
+  .tchart .th.x,.tchart .col.x{border-right-width:2pt}
+  .print-notes{display:block;font-size:9.5pt;margin:.3rem 0 0;padding-left:1.4rem;columns:2;column-gap:1.4rem}
+  .print-notes li{break-inside:avoid;margin-bottom:.2rem}
+  .print-only{display:block}
+  .video a::after{content:" (" attr(href) ")";font-size:8pt;word-break:break-all}
+  .module{break-before:page}
+  .prob{break-inside:avoid;break-before:page}
+  #practice .prob:first-of-type{break-before:auto}
+  #key{break-before:page}
+  #key .keyitem{break-inside:avoid;margin-bottom:.3in}
+  #key .psol{display:block !important;border:none;padding:0;break-inside:avoid}
+  #key .psol svg.sol-fbd{max-width:3in}
+  #key .psol svg.sol-fbd.two{max-width:4.8in}
+  .figs,.problem,.tchart,.trio,.pair,.forces,.law{break-inside:avoid}
+  .law{border-left-width:3pt}
+}
+
+.sqrt{white-space:nowrap}
+.sqrt>span{display:inline-block;vertical-align:middle;border-top:1.5px solid currentColor;padding:2px .12em 0;margin-left:.05em;line-height:1.3}
+sup{font-size:.68em;line-height:0}
+table.data{border-collapse:collapse;width:100%;font-family:var(--math);font-size:1rem;margin:.6rem 0}
+table.data th,table.data td{border:1.5px solid var(--ink);padding:.3rem .5rem;text-align:center}
+table.data th{font-family:var(--sans);font-size:.88rem}
+.wrapx{overflow-x:auto}
+.calc{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin:.6rem 0}
+.calc input{font:inherit;width:6rem;padding:.3rem .45rem;border:2px solid var(--ink);border-radius:6px;background:var(--paper);color:var(--ink)}
+.vq svg{max-width:300px;margin:0 auto;display:block}
+.hero-note{font-size:.92rem;color:var(--muted);text-align:center;margin-top:-.4rem}
+.fig-center{max-width:420px;margin:0 auto}
+[hidden]{display:none !important}
+@media print{ .hero-note{color:#000} h2,h3{break-after:avoid} #method{break-before:page} }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute;color:var(--ink)" aria-hidden="true" focusable="false">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="13" markerHeight="13" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+    <marker id="ahs" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+    <marker id="ahc" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--accent)"/></marker>
+    <pattern id="hatch" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="7" stroke="currentColor" stroke-width="1.4"/></pattern>
+  </defs>
+</svg>
+<main>
+
+<header>
+  <p class="course">AP Physics 1, Circular Motion and Gravitation</p>
+  <h1>Going in circles: circular motion and gravitation</h1>
+  <p class="lede">An object moving in a circle is always accelerating, even at a constant speed. Every problem here uses the same T-chart you already know, with one column pointing toward the center of the circle.</p>
+  <div class="hero" aria-label="T-chart: the c-column, toward the center, starts with sum of F c equals m v squared over r; the y-column starts with sum of F y equals zero">
+    <div class="hx">c</div><div class="hy">y</div>
+    <div class="bx">Σ<var>F</var><sub>c</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></div><div class="by">Σ<var>F</var><sub>y</sub> = 0</div>
+  </div>
+  <p class="hero-note"><var>c</var> points toward the center of the circle. In a vertical circle, the <var>c</var>-direction is itself up or down.</p>
+  <p>Near Earth’s surface we use <span class="m"><var>g</var> = 10 m/s²</span>. For gravitation between planets and satellites, <span class="m"><var>G</var> = 6.67 × 10<sup>−11</sup> N·m²/kg²</span>.</p>
+  <nav class="toc noprint" aria-label="Lessons">
+    <p>Lessons</p>
+    <ol>
+      <li><a href="#moving">Moving in a circle</a></li>
+      <li><a href="#provides">What provides the force?</a></li>
+      <li><a href="#method">The method</a></li>
+      <li><a href="#horizontal">Horizontal circles</a></li>
+      <li><a href="#vertical">Vertical circles and apparent weight</a></li>
+      <li><a href="#conical">Conical pendulums</a></li>
+      <li><a href="#gravity">Gravity: force and field</a></li>
+      <li><a href="#orbits">Orbital speed and period</a></li>
+      <li><a href="#kepler">Kepler’s laws</a></li>
+      <li><a href="#mistakes">Common mistakes</a></li>
+      <li><a href="#practice">Practice</a></li>
+    </ol>
+  </nav>
+</header>
+<section id="moving">
+  <h2>1. Moving in a circle</h2>
+  <p><strong>Uniform circular motion</strong> means moving in a circle at a constant speed. The speed stays the same, but the direction of the velocity changes every instant, and a change in velocity is an acceleration. That acceleration always points toward the center of the circle.</p>
+  <div class="trio">
+    <div class="card"><h3>Tangential velocity</h3><p>Points along the tangent to the circle. One lap covers 2π<var>r</var> in one period <var>T</var>.</p><p class="m"><var>v</var> = <span class="frac"><span>2π<var>r</var></span><span><var>T</var></span></span></p></div>
+    <div class="card"><h3>Centripetal acceleration</h3><p>Points toward the center. Faster or tighter circles mean more acceleration.</p><p class="m"><var>a</var><sub>c</sub> = <span class="frac"><span><var>v</var>²</span><span><var>r</var></span></span></p></div>
+    <div class="card"><h3>Centripetal force</h3><p>The net force toward the center. It points the same way as <var>a</var><sub>c</sub>.</p><p class="m"><var>F</var><sub>c</sub> = <var>ma</var><sub>c</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p></div>
+  </div>
+  <div class="law"><p><strong>Centripetal force is not a new kind of force.</strong> It’s a job title for whichever real forces point toward the center: tension, friction, gravity, or the normal force. Never draw an extra arrow labeled “<var>F</var><sub>c</sub>” on a free-body diagram.</p></div>
+
+  <div class="lab-box noprint">
+    <h3>Circle explorer</h3>
+    <p>Watch the three vectors as the object goes around. Then let go and see which way it really goes.</p>
+    <div class="seg" id="circ-sc" role="group" aria-label="Scenario"></div>
+    <div class="controls">
+      <label>Radius <output id="circ-r-out"></output><input type="range" id="circ-r"></label>
+      <label>Speed <output id="circ-v-out"></output><input type="range" id="circ-v"></label>
+      <label>Mass <output id="circ-m-out"></output><input type="range" id="circ-m"></label>
+      <label id="circ-th-wrap" hidden>Bank angle <output id="circ-th-out"></output><input type="range" id="circ-th" min="5" max="45" step="1" value="25"></label>
+    </div>
+    <svg class="dia" id="circ-svg" viewBox="0 0 440 330" style="max-width:480px;margin:0 auto" role="img" aria-label="Top view of an object moving counterclockwise in a circle, showing its velocity, centripetal force, and centripetal acceleration"></svg>
+    <figure id="circ-bank-fig" hidden style="margin-top:.6rem"><svg class="dia" id="circ-bank" viewBox="0 0 440 250" style="max-width:480px;margin:0 auto" role="img" aria-label="Cross-section of the banked road: the car's normal force tilts toward the center of the curve"></svg><figcaption>Cross-section, looking along the road. The center of the curve is to the left.</figcaption></figure>
+    <div class="ctrl" style="margin-top:.4rem"><button type="button" id="circ-play">Pause</button><button type="button" class="primary" id="circ-cut"></button><button type="button" id="circ-reset">Start over</button></div>
+    <div class="readout" id="circ-read" aria-live="polite"></div>
+    <p style="font-size:.9rem;color:var(--muted)">Top view, not to scale. The animation speed is adjusted so you can follow it.</p>
+  </div>
+
+  <div class="lab-box noprint vq">
+    <h3>Vector check</h3>
+    <p>A puck on a frictionless air table is tied to a pin at the center and moves <strong>counterclockwise</strong>. Right now it’s at the 3 o’clock position.</p>
+    <svg class="dia" viewBox="0 0 300 250" role="img" aria-label="Circle with a puck at the 3 o'clock position and four labeled arrows: A up, B toward the center, C away from the center, D down">
+      <circle class="s dash thin" cx="120" cy="125" r="90" fill="none"/>
+      <circle class="fi" cx="120" cy="125" r="3"/><text x="120.0" y="145.0" text-anchor="middle" font-size="12" class="lab">pin</text>
+      <line class="s thin" x1="120" y1="125" x2="210" y2="125" stroke-dasharray="2 4"/>
+      <path class="s thin" d="M199,80 A90,90 0 0 0 165,47" marker-end="url(#ah)"/>
+      <line class="s" x1="210.0" y1="125.0" x2="210.0" y2="55.0" marker-end="url(#ah)"/><text x="210.0" y="45.0" text-anchor="middle" font-size="15">A</text>
+      <line class="s" x1="210.0" y1="125.0" x2="152.0" y2="125.0" marker-end="url(#ah)"/><text x="152.0" y="115.0" text-anchor="middle" font-size="15">B</text>
+      <line class="s" x1="210.0" y1="125.0" x2="280.0" y2="125.0" marker-end="url(#ah)"/><text x="288.0" y="130.0" text-anchor="start" font-size="15">C</text>
+      <line class="s" x1="210.0" y1="125.0" x2="210.0" y2="195.0" marker-end="url(#ah)"/><text x="210.0" y="214.0" text-anchor="middle" font-size="15">D</text>
+      <circle class="s fp" cx="210" cy="125" r="9"/>
+    </svg>
+    <div id="vq"></div>
+    <p class="score" id="vq-score" aria-live="polite"></p>
+  </div>
+</section>
+<section id="provides" class="noprint">
+  <h2>2. What provides the centripetal force?</h2>
+  <p>For each situation, pick the real force that points toward the center.</p>
+  <div id="sorter"></div>
+  <p class="score" id="sort-score" aria-live="polite"></p>
+</section>
+<section id="method">
+  <h2>3. The method</h2>
+  <p>This is the same T-chart from the Newton’s laws lessons. The only change: in the column that points toward the center, the right side is <span class="m"><span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></span> instead of <var>ma</var>.</p>
+  <ol class="method">
+    <li><strong>Find the circle.</strong> Where is the center, and what is <var>r</var>? The center is in the plane of the circle, which isn’t always where the string is tied.</li>
+    <li><strong>Draw a free-body diagram with real forces only.</strong> Draw <var>a</var><sub>c</sub> as a separate arrow beside it, pointing toward the center.</li>
+    <li><strong>Choose axes:</strong> <var>c</var> toward the center, and <var>y</var> perpendicular to the circle (usually vertical).</li>
+    <li><strong>Draw the T-chart.</strong> Start with <span class="m">Σ<var>F</var><sub>c</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></span> and <span class="m">Σ<var>F</var><sub>y</sub> = 0</span>.</li>
+    <li><strong>Assign signs.</strong> In the <var>c</var>-column, forces pointing toward the center are + and forces pointing away are −.</li>
+    <li><strong>Solve the column with only one unknown first,</strong> box the answer, and carry it across.</li>
+    <li><strong>Check:</strong> does it make sense? A track pushes harder at the bottom of a dip and less at the top of a hill.</li>
+  </ol>
+</section>
+<section id="horizontal" class="module">
+  <h2>4. Horizontal circles</h2>
+  <p>When something circles in a horizontal plane, the <var>c</var>-column is horizontal and the <var>y</var>-column is vertical. With nothing moving up or down, <span class="m">Σ<var>F</var><sub>y</sub> = 0</span>.</p>
+  <div data-stepper="w1"><h3>Worked example: a car on a flat curve</h3><div class="problem"><p>A 1000 kg car rounds a flat (unbanked) curve of radius 50 m. The coefficient of static friction between the tires and the road is 0.8. What is the fastest the car can go without skidding?</p></div><div class="figs"><figure><svg class="dia" viewBox="0 0 300 215" role="img" aria-label="Top view of a car on a curved road. Velocity points along the road (tangent); friction and centripetal acceleration both point toward the center of the curve, 50 meters away."><path class="s thin" d="M230.0,190.0 A150,150 0 0 0 80.0,40.0"/><path class="s thin" d="M260.0,190.0 A180,180 0 0 0 80.0,10.0"/><line class="s thin" x1="74" y1="190" x2="86" y2="190"/><line class="s thin" x1="80" y1="184" x2="80" y2="196"/><text x="80.0" y="210.0" text-anchor="middle" font-size="12" class="lab">center</text><line class="s ref" x1="80" y1="190" x2="196.7" y2="73.3"/><text x="104.0" y="150.0" text-anchor="end" font-size="14"><tspan class="it">r</tspan><tspan> = 50 m</tspan></text><rect class="s fp" x="182.7" y="65.3" width="28" height="16" rx="3" transform="rotate(45 196.7 73.3)"/><line class="s" x1="196.7" y1="73.3" x2="154.2" y2="30.9" marker-end="url(#ah)"/><text x="148.2" y="26.9" text-anchor="end" font-size="14"><tspan class="it">v</tspan></text><line class="s" x1="203.0" y1="79.7" x2="170.5" y2="112.2" marker-end="url(#ah)"/><text x="188.5" y="128.2" text-anchor="middle" font-size="14"><tspan class="it">F</tspan><tspan dy="4" font-size="10">f</tspan><tspan dy="-4"></tspan></text><line class="s dash thin" x1="190.3" y1="67.0" x2="157.8" y2="99.5" marker-end="url(#ah)"/><text x="135.8" y="97.5" text-anchor="middle" font-size="14"><tspan class="it">a</tspan><tspan dy="4" font-size="10">c</tspan><tspan dy="-4"></tspan></text></svg><figcaption>Top view: velocity is tangent, while friction and a<sub>c</sub> point toward the center</figcaption></figure><figure><svg class="dia" viewBox="0 0 300 240" role="img" aria-label="Free-body diagram of the car from behind: normal force 10,000 N up, weight 10,000 N down, friction toward the center of the curve; centripetal acceleration toward the center."><rect class="s fp" x="115.0" y="113.0" width="70" height="34" transform="rotate(0 150 130)"/><text x="150.0" y="135.0" text-anchor="middle" font-size="12" class="lab">car</text><line class="s" x1="150.0" y1="113.0" x2="150.0" y2="43.0" marker-end="url(#ah)"/><text x="158.0" y="50.0" text-anchor="start" font-size="14"><tspan class="it">F</tspan><tspan dy="4" font-size="10">N</tspan><tspan dy="-4"> = 10 000 N</tspan></text><line class="s" x1="150.0" y1="147.0" x2="150.0" y2="217.0" marker-end="url(#ah)"/><text x="158.0" y="226.0" text-anchor="start" font-size="14"><tspan class="it">F</tspan><tspan dy="4" font-size="10">g</tspan><tspan dy="-4"> = 10 000 N</tspan></text><line class="s" x1="115.0" y1="130.0" x2="55.0" y2="130.0" marker-end="url(#ah)"/><text x="52.0" y="135.0" text-anchor="end" font-size="14"><tspan class="it">F</tspan><tspan dy="4" font-size="10">f</tspan><tspan dy="-4"> = ?</tspan></text><line class="s thin" x1="80.0" y1="200.0" x2="34.0" y2="200.0" marker-end="url(#ah)"/><text x="57.0" y="191.0" text-anchor="middle" font-size="14"><tspan class="it">a</tspan><tspan dy="4" font-size="10">c</tspan><tspan dy="-4"></tspan></text><text x="16.0" y="30.0" text-anchor="start" font-size="12" class="lab">← center of the curve</text></svg><figcaption>Free-body diagram, seen from behind the car</figcaption></figure></div><div class="tchart"><div class="th x sm">c (toward center)</div><div class="th y sm">y</div><div class="col x"><p class="ln" data-s="1">Σ<var>F</var><sub>c</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="2"><var>F</var><sub>f</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="6">μ<sub>s</sub><var>F</var><sub>N</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="7">0.8(<span class="carry" data-from="w1-fn">10 000</span>) = <span class="frac"><span>1000<var>v</var>²</span><span>50</span></span><span class="tag"><var>F</var><sub>N</sub> carried from the <var>y</var>-column</span></p><p class="ln" data-s="8"><var>v</var>² = 400</p><p class="ln ans" data-s="9"><var>v</var> = 20 m/s</p></div><div class="col y"><p class="ln" data-s="1">Σ<var>F</var><sub>y</sub> = 0</p><p class="ln" data-s="3"><var>F</var><sub>N</sub> − <var>F</var><sub>g</sub> = 0</p><p class="ln hint" data-s="4">Only one unknown here. Solve this column first.</p><p class="ln ans" data-s="5" id="w1-fn"><var>F</var><sub>N</sub> = <var>mg</var> = 10 000 N</p></div><svg class="arrows" aria-hidden="true"></svg></div><div class="narr" aria-live="polite"></div><div class="ctrl"><button type="button" data-act="prev">Previous</button><button type="button" class="primary" data-act="next">Next step</button><button type="button" data-act="all">Show all</button><button type="button" data-act="reset">Start over</button></div><ol class="print-notes"></ol></div>
+</section>
+<section id="vertical" class="module">
+  <h2>5. Vertical circles and apparent weight</h2>
+  <p>A bathroom scale doesn’t measure your weight; it measures how hard it pushes up on you. That push, the normal force, is your <strong>apparent weight</strong>. In a vertical circle, the <var>c</var>-direction is up or down, and only one column is needed.</p>
+  <div class="trio">
+    <div class="card"><h3>Bottom of a dip or loop</h3><p>Center is above you. The track pushes harder than gravity: you feel heavier.</p><p class="m"><var>F</var><sub>N</sub> − <var>F</var><sub>g</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p></div>
+    <div class="card"><h3>Top of a hill</h3><p>Center is below you. The road pushes less than gravity: you feel lighter.</p><p class="m"><var>F</var><sub>g</sub> − <var>F</var><sub>N</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p></div>
+    <div class="card"><h3>Top of a loop (inside)</h3><p>Center is below you, and the track pushes down on you, toward the center.</p><p class="m"><var>F</var><sub>N</sub> + <var>F</var><sub>g</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p></div>
+  </div>
+  <div class="law"><p><strong>When the normal force reaches zero,</strong> gravity alone supplies the centripetal force: <span class="m"><var>mg</var> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></span>, so <span class="m"><var>v</var> = <span class="sqrt">√<span><var>gr</var></span></span></span>. That’s the <em>fastest</em> you can go over a hill without leaving the road, and the <em>slowest</em> you can go through the top of a loop without falling.</p></div>
+  <div data-stepper="w2"><h3>Worked example: the top of a loop</h3><div class="problem"><p>A 60 kg rider goes through the top of a vertical loop of radius 10 m at 15 m/s. Find the normal force from the track on the rider (their apparent weight), and the slowest speed at which they could pass the top.</p></div><div class="figs"><figure><svg class="dia" viewBox="0 0 320 260" role="img" aria-label="A vertical loop of radius 10 meters with a rider upside down at the top moving at 15 meters per second; the center of the loop is below the rider."><circle class="s" cx="150" cy="140" r="100" fill="none" stroke-width="4"/><line class="s thin" x1="144" y1="140" x2="156" y2="140"/><line class="s thin" x1="150" y1="134" x2="150" y2="146"/><text x="150.0" y="160.0" text-anchor="middle" font-size="12" class="lab">center</text><line class="s ref" x1="150" y1="140" x2="150" y2="66"/><text x="156.0" y="110.0" text-anchor="start" font-size="14"><tspan class="it">r</tspan><tspan> = 10 m</tspan></text><rect class="s fp" x="138" y="46" width="24" height="16" rx="3"/><text x="150.0" y="24.0" text-anchor="middle" font-size="12" class="lab">rider (upside down)</text><line class="s" x1="166.0" y1="54.0" x2="226.0" y2="54.0" marker-end="url(#ah)"/><text x="230.0" y="58.0" text-anchor="start" font-size="14"><tspan class="it">v</tspan><tspan> = 15 m/s</tspan></text></svg><figcaption>The rider is upside down at the top</figcaption></figure><figure><svg class="dia" viewBox="0 0 300 215" role="img" aria-label="Free-body diagram of the rider at the top of the loop: normal force from the track pointing down and weight 600 N pointing down; centripetal acceleration down, toward the center."><rect class="s fp" x="126.0" y="55.0" width="48" height="30" transform="rotate(0 150 70)"/><text x="150.0" y="75.0" text-anchor="middle" font-size="12" class="lab">60 kg</text><line class="s" x1="141.0" y1="85.0" x2="141.0" y2="141.0" marker-end="url(#ah)"/><text x="136.0" y="150.0" text-anchor="end" font-size="14"><tspan class="it">F</tspan><tspan dy="4" font-size="10">N</tspan><tspan dy="-4"> = ?</tspan></text><line class="s" x1="159.0" y1="85.0" x2="159.0" y2="130.0" marker-end="url(#ah)"/><text x="164.0" y="140.0" text-anchor="start" font-size="14"><tspan class="it">F</tspan><tspan dy="4" font-size="10">g</tspan><tspan dy="-4"> = 600 N</tspan></text><line class="s thin" x1="220.0" y1="80.0" x2="220.0" y2="126.0" marker-end="url(#ah)"/><text x="230.0" y="108.0" text-anchor="start" font-size="14"><tspan class="it">a</tspan><tspan dy="4" font-size="10">c</tspan><tspan dy="-4"></tspan></text><text x="150.0" y="200.0" text-anchor="middle" font-size="12" class="lab">center of the loop ↓</text></svg><figcaption>Free-body diagram: both forces point toward the center</figcaption></figure></div><div class="tchart"><div class="th x sm">Top at 15 m/s</div><div class="th y sm">Slowest (F<sub>N</sub> = 0)</div><div class="col x"><p class="ln" data-s="1">Σ<var>F</var><sub>c</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="2"><var>F</var><sub>N</sub> + <var>F</var><sub>g</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="3"><var>F</var><sub>N</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span> − <var>mg</var></p><p class="ln" data-s="4"><var>F</var><sub>N</sub> = <span class="frac"><span>60(15)²</span><span>10</span></span> − 600</p><p class="ln ans" data-s="5"><var>F</var><sub>N</sub> = 750 N</p></div><div class="col y"><p class="ln" data-s="6">Σ<var>F</var><sub>c</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="7">0 + <var>mg</var> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="8"><var>v</var> = <span class="sqrt">√<span><var>gr</var></span></span> = <span class="sqrt">√<span>10(10)</span></span></p><p class="ln ans" data-s="9"><var>v</var><sub>min</sub> = 10 m/s</p></div><svg class="arrows" aria-hidden="true"></svg></div><div class="narr" aria-live="polite"></div><div class="ctrl"><button type="button" data-act="prev">Previous</button><button type="button" class="primary" data-act="next">Next step</button><button type="button" data-act="all">Show all</button><button type="button" data-act="reset">Start over</button></div><ol class="print-notes"></ol></div>
+
+  <div class="lab-box noprint">
+    <h3>Apparent weight explorer</h3>
+    <div class="seg" id="aw-modes" role="group" aria-label="Position"></div>
+    <div class="controls">
+      <label>Mass <output id="aw-m-out"></output><input type="range" id="aw-m" min="40" max="100" step="10" value="60"></label>
+      <label>Radius <output id="aw-r-out"></output><input type="range" id="aw-r" min="5" max="30" step="1" value="10"></label>
+      <label>Speed <output id="aw-v-out"></output><input type="range" id="aw-v" min="0" max="30" step="1" value="15"></label>
+    </div>
+    <svg class="dia" id="aw-svg" viewBox="0 0 440 300" style="max-width:480px;margin:0 auto" role="img" aria-label="Track and rider with force arrows scaled to size"></svg>
+    <div class="readout" id="aw-read" aria-live="polite"></div>
+  </div>
+</section>
+<section id="conical" class="module">
+  <h2>6. Conical pendulums</h2>
+  <p>A mass on a string swings in a horizontal circle while the string sweeps out a cone. Two things trip people up:</p>
+  <ul class="mistakes">
+    <li><strong>The center of the circle is level with the mass,</strong> directly below the pivot, not at the pivot. The radius is <span class="m"><var>r</var> = <var>L</var> sin θ</span>.</li>
+    <li><strong>Tension does two jobs.</strong> Its vertical part, <span class="m"><var>T</var> cos θ</span>, holds up the weight. Its horizontal part, <span class="m"><var>T</var> sin θ</span>, points toward the center and supplies the centripetal force. (θ is measured from the vertical.)</li>
+  </ul>
+  <div data-stepper="w3"><h3>Worked example</h3><div class="problem"><p>A 2 kg ball hangs from a 2.0 m string and moves in a horizontal circle with the string at 37° from the vertical. Find the tension and the ball’s speed.</p></div><div class="figs"><figure><svg class="dia" viewBox="0 0 320 232" role="img" aria-label="Conical pendulum: a 2 kilogram ball on a 2.0 meter string at 37 degrees from vertical moves in a horizontal circle. The circle's center is level with the ball, directly below the pivot."><rect x="100" y="8" width="120" height="10" fill="url(#hatch)"/><line class="s thin" x1="100" y1="18" x2="220" y2="18"/><ellipse class="s dash thin" cx="160" cy="178" rx="120" ry="22"/><line class="s ref" x1="160" y1="18" x2="160" y2="178"/><line class="s ref" x1="160" y1="178" x2="280" y2="178"/><text x="220.0" y="172.0" text-anchor="middle" font-size="14"><tspan class="it">r</tspan><tspan> = ?</tspan></text><line class="s" x1="160" y1="18" x2="280" y2="178"/><path class="s thin" d="M160,58 A40,40 0 0 0 184,50"/><text x="168.0" y="76.0" text-anchor="start" font-size="13">37°</text><text x="232.0" y="92.0" text-anchor="start" font-size="14"><tspan class="it">L</tspan><tspan> = 2.0 m</tspan></text><circle class="s fp" cx="280" cy="178" r="10"/><text x="280.0" y="210.0" text-anchor="middle" font-size="12" class="lab">2 kg</text><line class="s thin" x1="154" y1="178" x2="166" y2="178"/><line class="s thin" x1="160" y1="172" x2="160" y2="184"/><text x="160.0" y="222.0" text-anchor="middle" font-size="12" class="lab">center of the circle</text></svg><figcaption>The string sweeps out a cone</figcaption></figure><figure><svg class="dia" viewBox="0 0 300 215" role="img" aria-label="Free-body diagram of the ball: tension along the string up and toward the center, with dashed components T sine theta toward the center and T cosine theta up; weight 20 N down; centripetal acceleration toward the center."><circle class="s fp" cx="170" cy="130" r="9"/><line class="s" x1="170.0" y1="130.0" x2="110.0" y2="50.0" marker-end="url(#ah)"/><text x="124.0" y="46.0" text-anchor="start" font-size="14"><tspan class="it">T</tspan><tspan> = ?</tspan></text><line class="s dash thin" x1="170.0" y1="130.0" x2="110.0" y2="130.0" marker-end="url(#ah)"/><text x="140.0" y="150.0" text-anchor="middle" font-size="14"><tspan class="it">T</tspan><tspan> sin θ</tspan></text><line class="s dash thin" x1="110.0" y1="130.0" x2="110.0" y2="52.0" marker-end="url(#ah)"/><text x="102.0" y="100.0" text-anchor="end" font-size="14"><tspan class="it">T</tspan><tspan> cos θ</tspan></text><line class="s" x1="170.0" y1="139.0" x2="170.0" y2="203.0" marker-end="url(#ah)"/><text x="178.0" y="196.0" text-anchor="start" font-size="14"><tspan class="it">F</tspan><tspan dy="4" font-size="10">g</tspan><tspan dy="-4"> = 20 N</tspan></text><line class="s thin" x1="270.0" y1="130.0" x2="224.0" y2="130.0" marker-end="url(#ah)"/><text x="247.0" y="121.0" text-anchor="middle" font-size="14"><tspan class="it">a</tspan><tspan dy="4" font-size="10">c</tspan><tspan dy="-4"></tspan></text><text x="16.0" y="24.0" text-anchor="start" font-size="12" class="lab">← center of the circle</text></svg><figcaption>Free-body diagram with tension split into parts</figcaption></figure></div><div class="forces"><p class="ttl">Find the circle first</p><p><span class="m"><var>r</var> = <var>L</var> sin θ = 2.0(0.6) = 1.2 m</span>, with sin 37° ≈ 0.6 and cos 37° ≈ 0.8</p></div><div class="tchart"><div class="th x sm">c (toward center)</div><div class="th y sm">y</div><div class="col x"><p class="ln" data-s="1">Σ<var>F</var><sub>c</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="2"><var>T</var><sub>c</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="3"><var>T</var> sin θ = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="7"><span class="carry" data-from="w3-t">25</span>(0.6) = <span class="frac"><span>2<var>v</var>²</span><span>1.2</span></span><span class="tag"><var>T</var> carried from the <var>y</var>-column</span></p><p class="ln" data-s="8"><var>v</var>² = 9</p><p class="ln ans" data-s="9"><var>v</var> = 3 m/s</p></div><div class="col y"><p class="ln" data-s="1">Σ<var>F</var><sub>y</sub> = 0</p><p class="ln" data-s="2"><var>T</var><sub>y</sub> − <var>F</var><sub>g</sub> = 0</p><p class="ln" data-s="3"><var>T</var> cos θ − <var>F</var><sub>g</sub> = 0</p><p class="ln hint" data-s="4">Only one unknown here. Solve this column first.</p><p class="ln" data-s="5"><var>T</var> = <span class="frac"><span>20</span><span>0.8</span></span></p><p class="ln ans" data-s="6" id="w3-t"><var>T</var> = 25 N</p></div><svg class="arrows" aria-hidden="true"></svg></div><div class="narr" aria-live="polite"></div><div class="ctrl"><button type="button" data-act="prev">Previous</button><button type="button" class="primary" data-act="next">Next step</button><button type="button" data-act="all">Show all</button><button type="button" data-act="reset">Start over</button></div><ol class="print-notes"></ol></div>
+
+  <div class="lab-box noprint">
+    <h3>Conical pendulum explorer</h3>
+    <p>Side view, shown in real time. Raise the angle and watch the tension and speed grow.</p>
+    <div class="controls">
+      <label>Angle from vertical <output id="cn-t-out"></output><input type="range" id="cn-t" min="5" max="70" step="1" value="37"></label>
+      <label>String length <output id="cn-l-out"></output><input type="range" id="cn-l" min="0.5" max="3" step="0.1" value="2"></label>
+      <label>Mass <output id="cn-m-out"></output><input type="range" id="cn-m" min="0.5" max="5" step="0.5" value="2"></label>
+    </div>
+    <svg class="dia" id="cn-svg" viewBox="0 0 440 300" style="max-width:480px;margin:0 auto" role="img" aria-label="Side view of a conical pendulum with tension and weight arrows"></svg>
+    <div class="ctrl" style="margin-top:.4rem"><button type="button" id="cn-play">Pause</button></div>
+    <div class="readout" id="cn-read" aria-live="polite"></div>
+  </div>
+</section>
+<section id="gravity" class="module">
+  <h2>7. Gravity: a fundamental force and its field</h2>
+  <p>Physicists know of four fundamental interactions: <strong>gravitational, electromagnetic, strong nuclear,</strong> and <strong>weak nuclear</strong>. Gravity is by far the weakest, yet it shapes planets, stars, and galaxies. It always attracts, it reaches across any distance, and mass never cancels the way positive and negative charges do.</p>
+  <div class="pair">
+    <div class="card"><h3>Newton’s law of gravitation</h3><p>Every pair of masses attracts each other along the line between their centers.</p><p class="m" style="font-size:1.2rem"><var>F</var><sub>g</sub> = <span class="frac"><span><var>G</var><var>m</var><sub>1</sub><var>m</var><sub>2</sub></span><span><var>r</var>²</span></span></p><p><var>r</var> is the center-to-center distance. By Newton’s third law, Earth pulls you exactly as hard as you pull Earth.</p></div>
+    <div class="card"><h3>Gravitational field</h3><p>A mass <var>M</var> creates a field in the space around it. The field is the force per kilogram on anything placed there.</p><p class="m" style="font-size:1.2rem"><var>g</var> = <span class="frac"><span><var>F</var><sub>g</sub></span><span><var>m</var></span></span> = <span class="frac"><span><var>GM</var></span><span><var>r</var>²</span></span></p><p>Units: N/kg, which is the same as m/s². The field points toward the center of the mass.</p></div>
+  </div>
+  <div class="law"><p><strong>Field and force:</strong> the field belongs to the planet; the force belongs to the pair. Put a mass <var>m</var> in a field <var>g</var> and it feels <span class="m"><var>F</var><sub>g</sub> = <var>mg</var></span>. Both follow an <strong>inverse-square law</strong>: double the distance from the center and the field drops to ¼; triple it and it drops to ⅑.</p></div>
+
+  <div class="lab-box noprint">
+    <h3>Gravitational field explorer</h3>
+    <p>The small arrows show the field. Their lengths shrink with the square of the distance. Move the probe mass and watch the force on it.</p>
+    <div class="seg" id="fld-pl" role="group" aria-label="Planet"></div>
+    <div class="controls">
+      <label>Distance from center <output id="fld-d-out"></output><input type="range" id="fld-d" min="1" max="6" step="0.1" value="2"></label>
+      <label>Probe mass <output id="fld-m-out"></output><input type="range" id="fld-m" min="1" max="100" step="1" value="60"></label>
+    </div>
+    <svg class="dia" id="fld-svg" viewBox="0 0 460 300" style="max-width:500px;margin:0 auto" role="img" aria-label="Planet with gravitational field arrows pointing toward its center and a probe mass with the force on it"></svg>
+    <div class="readout" id="fld-read" aria-live="polite"></div>
+  </div>
+
+  <div data-stepper="w4"><h3>Worked example: field on another planet</h3><div class="problem"><p>Planet X has twice Earth’s mass and twice Earth’s radius. Find the gravitational field at its surface, and the weight of a 50 kg student standing there.</p></div><svg class="dia" viewBox="0 0 330 195" style="max-width:330px;margin:0 auto" role="img" aria-label="Earth with mass M and radius R beside Planet X with mass 2M and radius 2R."><circle class="s fpan" cx="80" cy="90" r="34"/><text x="80.0" y="95.0" text-anchor="middle" font-size="12" class="lab">Earth</text><text x="80.0" y="150.0" text-anchor="middle" font-size="14"><tspan class="it">M</tspan><tspan>, </tspan><tspan class="it">R</tspan></text><circle class="s fpan" cx="240" cy="90" r="68"/><text x="240.0" y="95.0" text-anchor="middle" font-size="12" class="lab">Planet X</text><text x="240.0" y="182.0" text-anchor="middle" font-size="14">2<tspan class="it">M</tspan><tspan>, 2</tspan><tspan class="it">R</tspan></text></svg><div class="tchart"><div class="th x sm">Earth</div><div class="th y sm">Planet X</div><div class="col x"><p class="ln" data-s="1"><var>g</var><sub>E</sub> = <span class="frac"><span><var>GM</var></span><span><var>R</var>²</span></span></p><p class="ln ans" data-s="2" id="w4-g"><var>g</var><sub>E</sub> = 10 m/s²</p></div><div class="col y"><p class="ln" data-s="3"><var>g</var><sub>X</sub> = <span class="frac"><span><var>G</var>(2<var>M</var>)</span><span>(2<var>R</var>)²</span></span></p><p class="ln" data-s="4"><var>g</var><sub>X</sub> = <span class="frac"><span>2</span><span>4</span></span> · <span class="frac"><span><var>GM</var></span><span><var>R</var>²</span></span></p><p class="ln" data-s="5"><var>g</var><sub>X</sub> = ½ <var>g</var><sub>E</sub></p><p class="ln" data-s="6"><var>g</var><sub>X</sub> = ½(<span class="carry" data-from="w4-g">10</span>)<span class="tag"><var>g</var><sub>E</sub> carried from the Earth column</span></p><p class="ln ans" data-s="7"><var>g</var><sub>X</sub> = 5 m/s²</p><p class="ln" data-s="8"><var>F</var><sub>g</sub> = <var>mg</var><sub>X</sub> = 50(5)</p><p class="ln ans" data-s="9"><var>F</var><sub>g</sub> = 250 N</p></div><svg class="arrows" aria-hidden="true"></svg></div><div class="narr" aria-live="polite"></div><div class="ctrl"><button type="button" data-act="prev">Previous</button><button type="button" class="primary" data-act="next">Next step</button><button type="button" data-act="all">Show all</button><button type="button" data-act="reset">Start over</button></div><ol class="print-notes"></ol></div>
+</section>
+<section id="orbits" class="module">
+  <h2>8. Orbital speed and period</h2>
+  <p>A satellite in a circular orbit is in <strong>free fall</strong>. It falls toward Earth the whole time, but it moves sideways so fast that the ground curves away beneath it, and it keeps missing. Gravity alone supplies the centripetal force.</p>
+  <div data-stepper="w5"><h3>Worked example: a satellite in low orbit</h3><div class="problem"><p>A satellite orbits 400 km above Earth’s surface, so <var>r</var> = 6.77 × 10<sup>6</sup> m from Earth’s center. Earth’s mass is 5.97 × 10<sup>24</sup> kg. Find the satellite’s orbital speed and period.</p></div><svg class="dia" viewBox="0 0 320 230" style="max-width:320px;margin:0 auto" role="img" aria-label="A satellite in a circular orbit around Earth. Gravity points toward Earth's center; velocity is tangent to the orbit; the orbit radius r equals Earth's radius plus the altitude."><circle class="s fpan" cx="150" cy="120" r="48"/><text x="150.0" y="125.0" text-anchor="middle" font-size="12" class="lab">Earth</text><circle class="s dash thin" cx="150" cy="120" r="95" fill="none"/><line class="s ref" x1="150" y1="120" x2="77.2" y2="181"/><text x="34.0" y="210.0" text-anchor="start" font-size="13"><tspan class="it">r</tspan><tspan> = </tspan><tspan class="it">R</tspan> + <tspan class="it">h</tspan></text><rect class="s fp" x="237" y="112" width="16" height="16"/><line class="s" x1="237.0" y1="120.0" x2="205.0" y2="120.0" marker-end="url(#ah)"/><text x="220.0" y="110.0" text-anchor="middle" font-size="14"><tspan class="it">F</tspan><tspan dy="4" font-size="10">g</tspan><tspan dy="-4"></tspan></text><line class="s thin" x1="245.0" y1="112.0" x2="245.0" y2="50.0" marker-end="url(#ah)"/><text x="253.0" y="64.0" text-anchor="start" font-size="14"><tspan class="it">v</tspan></text></svg><div class="tchart"><div class="th x sm">c (toward Earth)</div><div class="th y sm">One lap</div><div class="col x"><p class="ln" data-s="1">Σ<var>F</var><sub>c</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="2"><var>F</var><sub>g</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="3"><span class="frac"><span><var>GMm</var></span><span><var>r</var>²</span></span> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="4"><var>v</var> = <span class="sqrt">√<span><span class="frac"><span><var>GM</var></span><span><var>r</var></span></span></span></span></p><p class="ln" data-s="5"><var>v</var> = <span class="sqrt">√<span><span class="frac"><span>(6.67 × 10<sup>−11</sup>)(5.97 × 10<sup>24</sup>)</span><span>6.77 × 10<sup>6</sup></span></span></span></span></p><p class="ln ans" data-s="6" id="w5-v"><var>v</var> = 7.67 × 10<sup>3</sup> m/s</p></div><div class="col y"><p class="ln" data-s="7"><var>v</var> = <span class="frac"><span>2π<var>r</var></span><span><var>T</var></span></span></p><p class="ln" data-s="8"><var>T</var> = <span class="frac"><span>2π<var>r</var></span><span><var>v</var></span></span></p><p class="ln" data-s="9"><var>T</var> = <span class="frac"><span>2π(6.77 × 10<sup>6</sup>)</span><span><span class="carry" data-from="w5-v">7.67 × 10<sup>3</sup></span></span></span><span class="tag"><var>v</var> carried from the <var>c</var>-column</span></p><p class="ln ans" data-s="10"><var>T</var> = 5.55 × 10<sup>3</sup> s ≈ 92 min</p></div><svg class="arrows" aria-hidden="true"></svg></div><div class="narr" aria-live="polite"></div><div class="ctrl"><button type="button" data-act="prev">Previous</button><button type="button" class="primary" data-act="next">Next step</button><button type="button" data-act="all">Show all</button><button type="button" data-act="reset">Start over</button></div><ol class="print-notes"></ol></div>
+  <div class="law">
+    <p><strong>Two results to remember:</strong></p>
+    <p class="m" style="font-size:1.15rem;text-align:center"><var>v</var> = <span class="sqrt">√<span><span class="frac"><span><var>GM</var></span><span><var>r</var></span></span></span></span>&emsp;&emsp;<var>T</var>² = <span class="frac"><span>4π²</span><span><var>GM</var></span></span><var>r</var>³</p>
+    <p>The second comes from putting <span class="m"><var>v</var> = 2π<var>r</var>/<var>T</var></span> into the first. Neither depends on the satellite’s mass. Farther orbits are <em>slower</em> and take <em>longer</em>.</p>
+  </div>
+
+  <div class="lab-box noprint">
+    <h3>Orbit explorer</h3>
+    <p>Pick an orbit or slide outward from Earth. The animation keeps the real ratios between periods: one ISS lap takes 6 seconds here.</p>
+    <div class="seg" id="orb-pre" role="group" aria-label="Preset orbits"></div>
+    <div class="controls">
+      <label>Orbit radius <output id="orb-u-out"></output><input type="range" id="orb-u" min="0" max="1000" step="1" value="120"></label>
+    </div>
+    <svg class="dia" id="orb-svg" viewBox="0 0 440 320" style="max-width:460px;margin:0 auto" role="img" aria-label="Earth and a satellite in a circular orbit with its velocity and the gravitational force on it"></svg>
+    <div class="readout" id="orb-read" aria-live="polite"></div>
+  </div>
+</section>
+<section id="kepler" class="module">
+  <h2>9. Kepler’s laws</h2>
+  <p>Johannes Kepler worked out three rules from years of careful observations of planets. Decades later, Newton showed that all three follow from his law of gravitation.</p>
+  <div class="trio">
+    <div class="card"><h3>1. Law of orbits</h3><p>Each planet moves in an <strong>ellipse</strong> with the Sun at one focus. A circle is an ellipse with zero eccentricity; most planet orbits are close to circles.</p></div>
+    <div class="card"><h3>2. Law of areas</h3><p>The line from the Sun to a planet sweeps out <strong>equal areas in equal times</strong>. A planet moves fastest when closest to the Sun (perihelion) and slowest when farthest (aphelion).</p></div>
+    <div class="card"><h3>3. Law of periods</h3><p>The square of the period is proportional to the cube of the orbit size, <var>a</var> (the semi-major axis). The ratio is the same for everything orbiting the same body.</p><p class="m"><var>T</var>² ∝ <var>a</var>³</p></div>
+  </div>
+
+  <div class="lab-box noprint">
+    <h3>Kepler explorer</h3>
+    <p>Each shaded wedge takes the same amount of time. The wedges near the Sun are short and wide; the ones far away are long and thin. Their areas are equal.</p>
+    <div class="controls">
+      <label>Eccentricity <output id="kp-e-out"></output><input type="range" id="kp-e" min="0" max="0.8" step="0.05" value="0.5"></label>
+    </div>
+    <svg class="dia" id="kp-svg" viewBox="0 0 460 300" style="max-width:500px;margin:0 auto" role="img" aria-label="Elliptical orbit with the Sun at one focus, a moving planet, and shaded wedges of equal area"></svg>
+    <div class="ctrl" style="margin-top:.4rem"><button type="button" id="kp-play">Pause</button><button type="button" id="kp-wedge" aria-pressed="true">Equal-time wedges</button></div>
+    <div class="readout" id="kp-read" aria-live="polite"></div>
+  </div>
+
+  <h3>Testing the third law</h3>
+  <p>Using years and astronomical units (1 AU is Earth’s average distance from the Sun), <span class="m"><var>T</var>²/<var>a</var>³</span> comes out to 1 for every planet:</p>
+  <div class="wrapx"><table class="data">
+    <thead><tr><th>Planet</th><th><var>a</var> (AU)</th><th><var>T</var> (years)</th><th><var>T</var>²</th><th><var>a</var>³</th><th><var>T</var>²/<var>a</var>³</th></tr></thead>
+    <tbody>
+      <tr><td>Mercury</td><td>0.387</td><td>0.241</td><td>0.058</td><td>0.058</td><td>1.00</td></tr>
+      <tr><td>Venus</td><td>0.723</td><td>0.615</td><td>0.378</td><td>0.378</td><td>1.00</td></tr>
+      <tr><td>Earth</td><td>1.000</td><td>1.000</td><td>1.000</td><td>1.000</td><td>1.00</td></tr>
+      <tr><td>Mars</td><td>1.524</td><td>1.881</td><td>3.54</td><td>3.54</td><td>1.00</td></tr>
+      <tr><td>Jupiter</td><td>5.203</td><td>11.86</td><td>140.7</td><td>140.9</td><td>1.00</td></tr>
+      <tr><td>Saturn</td><td>9.537</td><td>29.46</td><td>867.9</td><td>867.4</td><td>1.00</td></tr>
+    </tbody>
+  </table></div>
+  <div class="calc noprint"><label for="kp-a">Try it: orbit size <var>a</var> =</label><input id="kp-a" type="number" step="any" value="4" inputmode="decimal"> AU <span id="kp-T" class="m" aria-live="polite"></span></div>
+</section>
+<section id="mistakes">
+  <h2>10. Common mistakes</h2>
+  <ul class="mistakes">
+    <li><strong>Drawing “<var>F</var><sub>c</sub>” as an extra force.</strong> The centripetal force is the net force from real forces already on your diagram.</li>
+    <li><strong>Drawing an outward “centrifugal” force.</strong> Nothing pushes you outward on a turn. You feel pressed outward because your body keeps trying to go straight (inertia) while the car turns under you.</li>
+    <li><strong>Thinking a released object flies straight outward.</strong> It moves off along the tangent, in the direction of its velocity at that instant.</li>
+    <li><strong>Using the string length as the radius</strong> of a conical pendulum. The radius is <var>L</var> sin θ.</li>
+    <li><strong>Assuming <span class="m"><var>F</var><sub>N</sub> = <var>mg</var></span> in a vertical circle.</strong> The normal force is bigger at the bottom of a dip and smaller at the top of a hill.</li>
+    <li><strong>Saying astronauts float because there’s no gravity in space.</strong> At the ISS, <var>g</var> is about 8.7 m/s². Astronauts float because they and the station are falling together.</li>
+    <li><strong>Measuring <var>r</var> from the surface.</strong> In <var>Gm</var><sub>1</sub><var>m</var><sub>2</sub>/<var>r</var>², <var>r</var> is center to center: planet radius plus altitude.</li>
+    <li><strong>Forgetting the square.</strong> Doubling the distance cuts gravity to one quarter, not one half.</li>
+  </ul>
+</section><section id="practice" class="module"><h2>11. Practice</h2><p>Use <var>g</var> = 10 m/s², sin 37° ≈ 0.6, and cos 37° ≈ 0.8. Type your answer and press <strong>Check</strong>. Answers within 2% are accepted.</p>
+  <div class="prob" data-hint="Tension is the only force pointing toward the center.">
+    <h3>Practice 1 <span class="ptype">Horizontal circle</span></h3>
+    <p>A 0.5 kg ball on a frictionless table is tied to a pin by a 0.8 m string and moves in a circle at 4 m/s. Find the ball’s centripetal acceleration and the tension in the string.</p>
+    <div class="answers"><label><var>a</var><sub>c</sub> = <input type="number" step="any" inputmode="decimal" data-ans="20" aria-label="centripetal acceleration"> m/s²</label><label><var>T</var> = <input type="number" step="any" inputmode="decimal" data-ans="10" aria-label="tension"> N</label></div>
+    <div class="pctrl"><button type="button" class="primary check">Check</button><button type="button" class="showsol" aria-expanded="false">Show solution</button></div>
+    <p class="fb" aria-live="polite"></p>
+    <div class="psol" hidden data-stepper="p1"><svg class="dia sol-fbd" viewBox="0 0 320 235" role="img" aria-label="Ball on a frictionless table: normal force 5 N up, weight 5 N down, tension 10 N toward the center; centripetal acceleration toward the center."><rect class="s fp" x="137.0" y="103.0" width="46" height="34" transform="rotate(0 160 120)"/><text x="160.0" y="125.0" text-anchor="middle" font-size="12" class="lab">0.5 kg</text><line class="s" x1="160.0" y1="103.0" x2="160.0" y2="63.0" marker-end="url(#ah)"/><text x="168.0" y="54.0" text-anchor="start" font-size="14"><tspan class="it">F</tspan><tspan dy="4" font-size="10">N</tspan><tspan dy="-4"> = 5 N</tspan></text><line class="s" x1="160.0" y1="137.0" x2="160.0" y2="177.0" marker-end="url(#ah)"/><text x="168.0" y="196.0" text-anchor="start" font-size="14"><tspan class="it">F</tspan><tspan dy="4" font-size="10">g</tspan><tspan dy="-4"> = 5 N</tspan></text><line class="s" x1="137.0" y1="120.0" x2="63.0" y2="120.0" marker-end="url(#ah)"/><text x="100.0" y="110.0" text-anchor="middle" font-size="14"><tspan class="it">T</tspan><tspan> = 10 N</tspan></text><line class="s thin" x1="70.0" y1="220.0" x2="24.0" y2="220.0" marker-end="url(#ah)"/><text x="47.0" y="211.0" text-anchor="middle" font-size="14"><tspan class="it">a</tspan><tspan dy="4" font-size="10">c</tspan><tspan dy="-4"></tspan></text><text x="16.0" y="26.0" text-anchor="start" font-size="12" class="lab">← center of the circle</text></svg><div class="tchart"><div class="th x sm">c (toward center)</div><div class="th y sm">y</div><div class="col x"><p class="ln" data-s="1">Σ<var>F</var><sub>c</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="2"><var>T</var> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="3"><var>T</var> = <span class="frac"><span>0.5(4)²</span><span>0.8</span></span></p><p class="ln ans" data-s="4"><var>T</var> = 10 N</p><p class="ln" data-s="5"><var>a</var><sub>c</sub> = <span class="frac"><span><var>v</var>²</span><span><var>r</var></span></span> = <span class="frac"><span>16</span><span>0.8</span></span></p><p class="ln ans" data-s="6"><var>a</var><sub>c</sub> = 20 m/s²</p></div><div class="col y"><p class="ln" data-s="1">Σ<var>F</var><sub>y</sub> = 0</p><p class="ln" data-s="2"><var>F</var><sub>N</sub> − <var>F</var><sub>g</sub> = 0</p><p class="ln ans" data-s="3"><var>F</var><sub>N</sub> = <var>mg</var> = 5 N</p></div><svg class="arrows" aria-hidden="true"></svg></div><div class="narr" aria-live="polite"></div><div class="ctrl"><button type="button" data-act="prev">Previous</button><button type="button" class="primary" data-act="next">Next step</button><button type="button" data-act="all">Show all</button><button type="button" data-act="reset">Start over</button></div><ol class="print-notes"></ol></div>
+    <div class="work print-only"><div class="fbd-box">Free-body diagram</div><div class="tchart blank"><div class="th x sm">c (toward center)</div><div class="th y sm">y</div><div class="col x"><p class="ln">Σ<var>F</var><sub>c</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p></div><div class="col y"><p class="ln">Σ<var>F</var><sub>y</sub> = 0</p></div></div></div>
+  </div>
+  <div class="prob" data-hint="Friction supplies the centripetal force. Then use Ff = μs FN.">
+    <h3>Practice 2 <span class="ptype">Horizontal circle</span></h3>
+    <p>A 1200 kg car rounds a flat curve of radius 40 m at 10 m/s. How much friction must the road supply, and what is the smallest coefficient of static friction that keeps the car from skidding?</p>
+    <div class="answers"><label><var>F</var><sub>f</sub> = <input type="number" step="any" inputmode="decimal" data-ans="3000" aria-label="friction force"> N</label><label>μ<sub>s</sub> = <input type="number" step="any" inputmode="decimal" data-ans="0.25" aria-label="coefficient of static friction"> </label></div>
+    <div class="pctrl"><button type="button" class="primary check">Check</button><button type="button" class="showsol" aria-expanded="false">Show solution</button></div>
+    <p class="fb" aria-live="polite"></p>
+    <div class="psol" hidden data-stepper="p2"><svg class="dia sol-fbd" viewBox="0 0 320 240" role="img" aria-label="Car from behind: normal force 12,000 N up, weight 12,000 N down, friction 3000 N toward the center of the curve; centripetal acceleration toward the center."><rect class="s fp" x="115.0" y="113.0" width="70" height="34" transform="rotate(0 150 130)"/><text x="150.0" y="135.0" text-anchor="middle" font-size="12" class="lab">1200 kg</text><line class="s" x1="150.0" y1="113.0" x2="150.0" y2="43.0" marker-end="url(#ah)"/><text x="158.0" y="50.0" text-anchor="start" font-size="14"><tspan class="it">F</tspan><tspan dy="4" font-size="10">N</tspan><tspan dy="-4"> = 12 000 N</tspan></text><line class="s" x1="150.0" y1="147.0" x2="150.0" y2="217.0" marker-end="url(#ah)"/><text x="158.0" y="226.0" text-anchor="start" font-size="14"><tspan class="it">F</tspan><tspan dy="4" font-size="10">g</tspan><tspan dy="-4"> = 12 000 N</tspan></text><line class="s" x1="115.0" y1="130.0" x2="85.0" y2="130.0" marker-end="url(#ah)"/><text x="74.0" y="122.0" text-anchor="end" font-size="14"><tspan class="it">F</tspan><tspan dy="4" font-size="10">f</tspan><tspan dy="-4"> = 3000 N</tspan></text><line class="s thin" x1="80.0" y1="200.0" x2="34.0" y2="200.0" marker-end="url(#ah)"/><text x="57.0" y="191.0" text-anchor="middle" font-size="14"><tspan class="it">a</tspan><tspan dy="4" font-size="10">c</tspan><tspan dy="-4"></tspan></text><text x="16.0" y="26.0" text-anchor="start" font-size="12" class="lab">← center of the curve</text></svg><div class="tchart"><div class="th x sm">c (toward center)</div><div class="th y sm">y</div><div class="col x"><p class="ln" data-s="1">Σ<var>F</var><sub>c</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="2"><var>F</var><sub>f</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="3"><var>F</var><sub>f</sub> = <span class="frac"><span>1200(10)²</span><span>40</span></span></p><p class="ln ans" data-s="4"><var>F</var><sub>f</sub> = 3000 N</p><p class="ln" data-s="7">μ<sub>s</sub> = <span class="frac"><span><var>F</var><sub>f</sub></span><span><var>F</var><sub>N</sub></span></span> = <span class="frac"><span>3000</span><span><span class="carry" data-from="p2-fn">12 000</span></span></span><span class="tag"><var>F</var><sub>N</sub> carried from the <var>y</var>-column</span></p><p class="ln ans" data-s="8">μ<sub>s</sub> = 0.25</p></div><div class="col y"><p class="ln" data-s="1">Σ<var>F</var><sub>y</sub> = 0</p><p class="ln" data-s="5"><var>F</var><sub>N</sub> − <var>F</var><sub>g</sub> = 0</p><p class="ln ans" data-s="6" id="p2-fn"><var>F</var><sub>N</sub> = 12 000 N</p></div><svg class="arrows" aria-hidden="true"></svg></div><div class="narr" aria-live="polite"></div><div class="ctrl"><button type="button" data-act="prev">Previous</button><button type="button" class="primary" data-act="next">Next step</button><button type="button" data-act="all">Show all</button><button type="button" data-act="reset">Start over</button></div><ol class="print-notes"></ol></div>
+    <div class="work print-only"><div class="fbd-box">Free-body diagram</div><div class="tchart blank"><div class="th x sm">c (toward center)</div><div class="th y sm">y</div><div class="col x"><p class="ln">Σ<var>F</var><sub>c</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p></div><div class="col y"><p class="ln">Σ<var>F</var><sub>y</sub> = 0</p></div></div></div>
+  </div>
+  <div class="prob" data-hint="At the crest, toward the center is down. Gravity points toward the center; FN points away.">
+    <h3>Practice 3 <span class="ptype">Apparent weight</span></h3>
+    <p>A car drives over the crest of a hill whose top is part of a circle of radius 20 m. The car moves at 10 m/s, and the driver’s mass is 50 kg. Find the driver’s apparent weight at the crest, and the fastest speed the car can have there without leaving the road.</p>
+    <div class="answers"><label><var>F</var><sub>N</sub> = <input type="number" step="any" inputmode="decimal" data-ans="250" aria-label="apparent weight"> N</label><label><var>v</var><sub>max</sub> = <input type="number" step="any" inputmode="decimal" data-ans="14.14" aria-label="maximum speed"> m/s</label></div>
+    <div class="pctrl"><button type="button" class="primary check">Check</button><button type="button" class="showsol" aria-expanded="false">Show solution</button></div>
+    <p class="fb" aria-live="polite"></p>
+    <div class="psol" hidden data-stepper="p3"><svg class="dia sol-fbd" viewBox="0 0 320 235" role="img" aria-label="Driver at the crest of a hill: normal force 250 N up, weight 500 N down; centripetal acceleration down toward the center of the curve."><rect class="s fp" x="130.0" y="85.0" width="40" height="30" transform="rotate(0 150 100)"/><text x="150.0" y="105.0" text-anchor="middle" font-size="12" class="lab">50 kg</text><line class="s" x1="150.0" y1="85.0" x2="150.0" y2="55.0" marker-end="url(#ah)"/><text x="158.0" y="62.0" text-anchor="start" font-size="14"><tspan class="it">F</tspan><tspan dy="4" font-size="10">N</tspan><tspan dy="-4"> = 250 N</tspan></text><line class="s" x1="150.0" y1="115.0" x2="150.0" y2="175.0" marker-end="url(#ah)"/><text x="158.0" y="180.0" text-anchor="start" font-size="14"><tspan class="it">F</tspan><tspan dy="4" font-size="10">g</tspan><tspan dy="-4"> = 500 N</tspan></text><line class="s thin" x1="230.0" y1="90.0" x2="230.0" y2="136.0" marker-end="url(#ah)"/><text x="240.0" y="118.0" text-anchor="start" font-size="14"><tspan class="it">a</tspan><tspan dy="4" font-size="10">c</tspan><tspan dy="-4"></tspan></text><text x="150.0" y="222.0" text-anchor="middle" font-size="12" class="lab">center of the hill’s curve ↓</text></svg><div class="tchart"><div class="th x sm">c (down, toward center)</div><div class="th y sm">Fastest (F<sub>N</sub> = 0)</div><div class="col x"><p class="ln" data-s="1">Σ<var>F</var><sub>c</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="2"><var>F</var><sub>g</sub> − <var>F</var><sub>N</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="3"><var>F</var><sub>N</sub> = <var>mg</var> − <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="4"><var>F</var><sub>N</sub> = 500 − <span class="frac"><span>50(10)²</span><span>20</span></span></p><p class="ln ans" data-s="5"><var>F</var><sub>N</sub> = 250 N</p></div><div class="col y"><p class="ln" data-s="6">Σ<var>F</var><sub>c</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="7"><var>mg</var> − 0 = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="8"><var>v</var> = <span class="sqrt">√<span><var>gr</var></span></span> = <span class="sqrt">√<span>10(20)</span></span></p><p class="ln ans" data-s="9"><var>v</var> ≈ 14.1 m/s</p></div><svg class="arrows" aria-hidden="true"></svg></div><div class="narr" aria-live="polite"></div><div class="ctrl"><button type="button" data-act="prev">Previous</button><button type="button" class="primary" data-act="next">Next step</button><button type="button" data-act="all">Show all</button><button type="button" data-act="reset">Start over</button></div><ol class="print-notes"></ol></div>
+    <div class="work print-only"><div class="fbd-box">Free-body diagram</div><div class="tchart blank"><div class="th x sm">c (toward center)</div><div class="th y sm">Fastest speed</div><div class="col x"><p class="ln">Σ<var>F</var><sub>c</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p></div><div class="col y"><p class="ln">Σ<var>F</var><sub>c</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p></div></div></div>
+  </div>
+  <div class="prob" data-hint="At the top, both tension and gravity point toward the center. At the minimum speed, T = 0.">
+    <h3>Practice 4 <span class="ptype">Vertical circle</span></h3>
+    <p>A 2 kg bucket of water is swung in a vertical circle of radius 0.9 m. What is the slowest it can move at the top without the water falling out? If it moves at 6 m/s at the top, what is the tension in the rope there?</p>
+    <div class="answers"><label><var>v</var><sub>min</sub> = <input type="number" step="any" inputmode="decimal" data-ans="3" aria-label="minimum speed"> m/s</label><label><var>T</var> = <input type="number" step="any" inputmode="decimal" data-ans="60" aria-label="tension at the top"> N</label></div>
+    <div class="pctrl"><button type="button" class="primary check">Check</button><button type="button" class="showsol" aria-expanded="false">Show solution</button></div>
+    <p class="fb" aria-live="polite"></p>
+    <div class="psol" hidden data-stepper="p4"><svg class="dia sol-fbd" viewBox="0 0 320 230" role="img" aria-label="Bucket at the top of a vertical circle: rope tension 60 N down and weight 20 N down; centripetal acceleration down toward the center."><rect class="s fp" x="132.0" y="55.0" width="36" height="30" transform="rotate(0 150 70)"/><text x="150.0" y="75.0" text-anchor="middle" font-size="12" class="lab">2 kg</text><line class="s" x1="141.0" y1="85.0" x2="141.0" y2="175.0" marker-end="url(#ah)"/><text x="136.0" y="178.0" text-anchor="end" font-size="14"><tspan class="it">T</tspan><tspan> = 60 N</tspan></text><line class="s" x1="159.0" y1="85.0" x2="159.0" y2="115.0" marker-end="url(#ah)"/><text x="165.0" y="120.0" text-anchor="start" font-size="14"><tspan class="it">F</tspan><tspan dy="4" font-size="10">g</tspan><tspan dy="-4"> = 20 N</tspan></text><line class="s thin" x1="225.0" y1="80.0" x2="225.0" y2="126.0" marker-end="url(#ah)"/><text x="235.0" y="108.0" text-anchor="start" font-size="14"><tspan class="it">a</tspan><tspan dy="4" font-size="10">c</tspan><tspan dy="-4"></tspan></text><text x="150.0" y="218.0" text-anchor="middle" font-size="12" class="lab">center of the circle ↓</text></svg><div class="tchart"><div class="th x sm">Top at 6 m/s</div><div class="th y sm">Slowest (T = 0)</div><div class="col x"><p class="ln" data-s="1">Σ<var>F</var><sub>c</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="2"><var>T</var> + <var>F</var><sub>g</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="3"><var>T</var> = <span class="frac"><span>2(6)²</span><span>0.9</span></span> − 20</p><p class="ln ans" data-s="4"><var>T</var> = 60 N</p></div><div class="col y"><p class="ln" data-s="5">Σ<var>F</var><sub>c</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="6">0 + <var>mg</var> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="7"><var>v</var> = <span class="sqrt">√<span><var>gr</var></span></span> = <span class="sqrt">√<span>10(0.9)</span></span></p><p class="ln ans" data-s="8"><var>v</var><sub>min</sub> = 3 m/s</p></div><svg class="arrows" aria-hidden="true"></svg></div><div class="narr" aria-live="polite"></div><div class="ctrl"><button type="button" data-act="prev">Previous</button><button type="button" class="primary" data-act="next">Next step</button><button type="button" data-act="all">Show all</button><button type="button" data-act="reset">Start over</button></div><ol class="print-notes"></ol></div>
+    <div class="work print-only"><div class="fbd-box">Free-body diagram</div><div class="tchart blank"><div class="th x sm">Top at 6 m/s</div><div class="th y sm">Slowest speed</div><div class="col x"><p class="ln">Σ<var>F</var><sub>c</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p></div><div class="col y"><p class="ln">Σ<var>F</var><sub>c</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p></div></div></div>
+  </div>
+  <div class="prob" data-hint="At the bottom, toward the center is up: FN − Fg = mv²/r.">
+    <h3>Practice 5 <span class="ptype">Apparent weight</span></h3>
+    <p>A 50 kg rider passes through the bottom of a vertical loop of radius 8 m at 12 m/s. Find the normal force on the rider and how many times their true weight they feel.</p>
+    <div class="answers"><label><var>F</var><sub>N</sub> = <input type="number" step="any" inputmode="decimal" data-ans="1400" aria-label="normal force"> N</label><label><var>F</var><sub>N</sub>/<var>F</var><sub>g</sub> = <input type="number" step="any" inputmode="decimal" data-ans="2.8" aria-label="ratio"> </label></div>
+    <div class="pctrl"><button type="button" class="primary check">Check</button><button type="button" class="showsol" aria-expanded="false">Show solution</button></div>
+    <p class="fb" aria-live="polite"></p>
+    <div class="psol" hidden data-stepper="p5"><svg class="dia sol-fbd" viewBox="0 0 320 235" role="img" aria-label="Rider at the bottom of a loop: normal force 1400 N up and weight 500 N down; centripetal acceleration up toward the center."><rect class="s fp" x="130.0" y="135.0" width="40" height="30" transform="rotate(0 150 150)"/><text x="150.0" y="155.0" text-anchor="middle" font-size="12" class="lab">50 kg</text><line class="s" x1="150.0" y1="135.0" x2="150.0" y2="23.0" marker-end="url(#ah)"/><text x="158.0" y="46.0" text-anchor="start" font-size="14"><tspan class="it">F</tspan><tspan dy="4" font-size="10">N</tspan><tspan dy="-4"> = 1400 N</tspan></text><line class="s" x1="150.0" y1="165.0" x2="150.0" y2="205.0" marker-end="url(#ah)"/><text x="158.0" y="214.0" text-anchor="start" font-size="14"><tspan class="it">F</tspan><tspan dy="4" font-size="10">g</tspan><tspan dy="-4"> = 500 N</tspan></text><line class="s thin" x1="230.0" y1="170.0" x2="230.0" y2="124.0" marker-end="url(#ah)"/><text x="240.0" y="152.0" text-anchor="start" font-size="14"><tspan class="it">a</tspan><tspan dy="4" font-size="10">c</tspan><tspan dy="-4"></tspan></text><text x="16.0" y="26.0" text-anchor="start" font-size="12" class="lab">center of the loop ↑</text></svg><div class="tchart"><div class="th x sm">c (up, toward center)</div><div class="th y sm">Compare to weight</div><div class="col x"><p class="ln" data-s="1">Σ<var>F</var><sub>c</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="2"><var>F</var><sub>N</sub> − <var>F</var><sub>g</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="3"><var>F</var><sub>N</sub> = <var>mg</var> + <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="4"><var>F</var><sub>N</sub> = 500 + <span class="frac"><span>50(12)²</span><span>8</span></span></p><p class="ln ans" data-s="5" id="p5-fn"><var>F</var><sub>N</sub> = 1400 N</p></div><div class="col y"><p class="ln" data-s="6"><span class="frac"><span><var>F</var><sub>N</sub></span><span><var>F</var><sub>g</sub></span></span> = <span class="frac"><span><span class="carry" data-from="p5-fn">1400</span></span><span>500</span></span><span class="tag"><var>F</var><sub>N</sub> carried from the <var>c</var>-column</span></p><p class="ln ans" data-s="7"><span class="frac"><span><var>F</var><sub>N</sub></span><span><var>F</var><sub>g</sub></span></span> = 2.8</p></div><svg class="arrows" aria-hidden="true"></svg></div><div class="narr" aria-live="polite"></div><div class="ctrl"><button type="button" data-act="prev">Previous</button><button type="button" class="primary" data-act="next">Next step</button><button type="button" data-act="all">Show all</button><button type="button" data-act="reset">Start over</button></div><ol class="print-notes"></ol></div>
+    <div class="work print-only"><div class="fbd-box">Free-body diagram</div><div class="tchart blank"><div class="th x sm">c (toward center)</div><div class="th y sm">Compare to weight</div><div class="col x"><p class="ln">Σ<var>F</var><sub>c</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p></div><div class="col y"><p class="ln"><span class="frac"><span><var>F</var><sub>N</sub></span><span><var>F</var><sub>g</sub></span></span></p></div></div></div>
+  </div>
+  <div class="prob" data-hint="Solve the y-column first: T cos θ = mg. Then use T sin θ = mv²/r.">
+    <h3>Practice 6 <span class="ptype">Conical pendulum</span></h3>
+    <p>A 0.5 kg ball hangs from a string and moves in a horizontal circle of radius 0.4 m. The string makes a 45° angle with the vertical. Find the tension in the string and the ball’s speed.</p>
+    <div class="answers"><label><var>T</var> = <input type="number" step="any" inputmode="decimal" data-ans="7.07" aria-label="tension"> N</label><label><var>v</var> = <input type="number" step="any" inputmode="decimal" data-ans="2" aria-label="speed"> m/s</label></div>
+    <div class="pctrl"><button type="button" class="primary check">Check</button><button type="button" class="showsol" aria-expanded="false">Show solution</button></div>
+    <p class="fb" aria-live="polite"></p>
+    <div class="psol" hidden data-stepper="p6"><svg class="dia sol-fbd" viewBox="0 0 320 225" role="img" aria-label="Ball on a conical pendulum: tension 7.07 N along the string at 45 degrees with dashed components toward the center and up; weight 5 N down; centripetal acceleration toward the center."><circle class="s fp" cx="180" cy="140" r="9"/><line class="s" x1="180.0" y1="140.0" x2="110.0" y2="70.0" marker-end="url(#ah)"/><text x="120.0" y="60.0" text-anchor="start" font-size="14"><tspan class="it">T</tspan><tspan> = 7.07 N</tspan></text><line class="s dash thin" x1="180.0" y1="140.0" x2="110.0" y2="140.0" marker-end="url(#ah)"/><text x="145.0" y="160.0" text-anchor="middle" font-size="14"><tspan class="it">T</tspan><tspan> sin 45°</tspan></text><line class="s dash thin" x1="110.0" y1="140.0" x2="110.0" y2="72.0" marker-end="url(#ah)"/><text x="102.0" y="112.0" text-anchor="end" font-size="14"><tspan class="it">T</tspan><tspan> cos 45°</tspan></text><line class="s" x1="180.0" y1="149.0" x2="180.0" y2="199.0" marker-end="url(#ah)"/><text x="188.0" y="196.0" text-anchor="start" font-size="14"><tspan class="it">F</tspan><tspan dy="4" font-size="10">g</tspan><tspan dy="-4"> = 5 N</tspan></text><line class="s thin" x1="270.0" y1="140.0" x2="224.0" y2="140.0" marker-end="url(#ah)"/><text x="247.0" y="131.0" text-anchor="middle" font-size="14"><tspan class="it">a</tspan><tspan dy="4" font-size="10">c</tspan><tspan dy="-4"></tspan></text><text x="16.0" y="26.0" text-anchor="start" font-size="12" class="lab">← center of the circle</text></svg><div class="tchart"><div class="th x sm">c (toward center)</div><div class="th y sm">y</div><div class="col x"><p class="ln" data-s="1">Σ<var>F</var><sub>c</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="2"><var>T</var> sin θ = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="6"><span class="carry" data-from="p6-t">7.07</span>(0.707) = <span class="frac"><span>0.5<var>v</var>²</span><span>0.4</span></span><span class="tag"><var>T</var> carried from the <var>y</var>-column</span></p><p class="ln" data-s="7"><var>v</var>² = 4</p><p class="ln ans" data-s="8"><var>v</var> = 2 m/s</p></div><div class="col y"><p class="ln" data-s="1">Σ<var>F</var><sub>y</sub> = 0</p><p class="ln" data-s="3"><var>T</var> cos θ − <var>F</var><sub>g</sub> = 0</p><p class="ln" data-s="4"><var>T</var> = <span class="frac"><span>5</span><span>cos 45°</span></span></p><p class="ln ans" data-s="5" id="p6-t"><var>T</var> = 7.07 N</p></div><svg class="arrows" aria-hidden="true"></svg></div><div class="narr" aria-live="polite"></div><div class="ctrl"><button type="button" data-act="prev">Previous</button><button type="button" class="primary" data-act="next">Next step</button><button type="button" data-act="all">Show all</button><button type="button" data-act="reset">Start over</button></div><ol class="print-notes"></ol></div>
+    <div class="work print-only"><div class="fbd-box">Free-body diagram</div><div class="tchart blank"><div class="th x sm">c (toward center)</div><div class="th y sm">y</div><div class="col x"><p class="ln">Σ<var>F</var><sub>c</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p></div><div class="col y"><p class="ln">Σ<var>F</var><sub>y</sub> = 0</p></div></div></div>
+  </div>
+  <div class="prob" data-hint="g = GM/R². Remember to square the 2.">
+    <h3>Practice 7 <span class="ptype">Gravitational field</span></h3>
+    <p>A planet has 3 times Earth’s mass and 2 times Earth’s radius. What is the gravitational field at its surface, and what would a 60 kg student weigh there?</p>
+    <div class="answers"><label><var>g</var> = <input type="number" step="any" inputmode="decimal" data-ans="7.5" aria-label="surface gravitational field"> m/s²</label><label><var>F</var><sub>g</sub> = <input type="number" step="any" inputmode="decimal" data-ans="450" aria-label="weight"> N</label></div>
+    <div class="pctrl"><button type="button" class="primary check">Check</button><button type="button" class="showsol" aria-expanded="false">Show solution</button></div>
+    <p class="fb" aria-live="polite"></p>
+    <div class="psol" hidden data-stepper="p7"><div class="tchart"><div class="th x sm">Earth</div><div class="th y sm">The planet</div><div class="col x"><p class="ln" data-s="1"><var>g</var><sub>E</sub> = <span class="frac"><span><var>GM</var></span><span><var>R</var>²</span></span></p><p class="ln ans" data-s="2" id="p7-g"><var>g</var><sub>E</sub> = 10 m/s²</p></div><div class="col y"><p class="ln" data-s="3"><var>g</var><sub>P</sub> = <span class="frac"><span><var>G</var>(3<var>M</var>)</span><span>(2<var>R</var>)²</span></span></p><p class="ln" data-s="4"><var>g</var><sub>P</sub> = <span class="frac"><span>3</span><span>4</span></span> <var>g</var><sub>E</sub></p><p class="ln" data-s="5"><var>g</var><sub>P</sub> = <span class="frac"><span>3</span><span>4</span></span>(<span class="carry" data-from="p7-g">10</span>)<span class="tag"><var>g</var><sub>E</sub> carried from the Earth column</span></p><p class="ln ans" data-s="6"><var>g</var><sub>P</sub> = 7.5 m/s²</p><p class="ln" data-s="7"><var>F</var><sub>g</sub> = <var>mg</var><sub>P</sub> = 60(7.5)</p><p class="ln ans" data-s="8"><var>F</var><sub>g</sub> = 450 N</p></div><svg class="arrows" aria-hidden="true"></svg></div><div class="narr" aria-live="polite"></div><div class="ctrl"><button type="button" data-act="prev">Previous</button><button type="button" class="primary" data-act="next">Next step</button><button type="button" data-act="all">Show all</button><button type="button" data-act="reset">Start over</button></div><ol class="print-notes"></ol></div>
+    <div class="work print-only"><div class="tchart blank"><div class="th x sm">Earth</div><div class="th y sm">The planet</div><div class="col x"><p class="ln"><var>g</var> = <span class="frac"><span><var>GM</var></span><span><var>R</var>²</span></span></p></div><div class="col y"><p class="ln"><var>g</var> = <span class="frac"><span><var>GM</var></span><span><var>R</var>²</span></span></p></div></div></div>
+  </div>
+  <div class="prob" data-hint="Set GMm/r² equal to mv²/r. Then T = 2πr/v.">
+    <h3>Practice 8 <span class="ptype">Orbits</span></h3>
+    <p>A satellite orbits a planet of mass 6.0 × 10<sup>24</sup> kg in a circle of radius 1.0 × 10<sup>7</sup> m. Find its orbital speed and period. Use <var>G</var> = 6.67 × 10<sup>−11</sup> N·m²/kg². (Type 6330 or 6.33e3.)</p>
+    <div class="answers"><label><var>v</var> = <input type="number" step="any" inputmode="decimal" data-ans="6330" aria-label="orbital speed"> m/s</label><label><var>T</var> = <input type="number" step="any" inputmode="decimal" data-ans="9930" aria-label="period"> s</label></div>
+    <div class="pctrl"><button type="button" class="primary check">Check</button><button type="button" class="showsol" aria-expanded="false">Show solution</button></div>
+    <p class="fb" aria-live="polite"></p>
+    <div class="psol" hidden data-stepper="p8"><svg class="dia sol-fbd" viewBox="0 0 320 215" role="img" aria-label="Satellite: gravity is the only force, pointing toward the planet's center; velocity is tangent; centripetal acceleration points toward the planet."><circle class="s fpan" cx="70" cy="110" r="40"/><text x="70.0" y="115.0" text-anchor="middle" font-size="12" class="lab">planet</text><rect class="s fp" x="222" y="102" width="16" height="16"/><line class="s" x1="222.0" y1="110.0" x2="150.0" y2="110.0" marker-end="url(#ah)"/><text x="186.0" y="100.0" text-anchor="middle" font-size="14"><tspan class="it">F</tspan><tspan dy="4" font-size="10">g</tspan><tspan dy="-4"></tspan></text><line class="s dash thin" x1="230.0" y1="102.0" x2="230.0" y2="40.0" marker-end="url(#ah)"/><text x="240.0" y="60.0" text-anchor="start" font-size="14"><tspan class="it">v</tspan></text><line class="s thin" x1="250.0" y1="180.0" x2="204.0" y2="180.0" marker-end="url(#ah)"/><text x="227.0" y="171.0" text-anchor="middle" font-size="14"><tspan class="it">a</tspan><tspan dy="4" font-size="10">c</tspan><tspan dy="-4"></tspan></text></svg><div class="tchart"><div class="th x sm">c (toward planet)</div><div class="th y sm">One lap</div><div class="col x"><p class="ln" data-s="1">Σ<var>F</var><sub>c</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="2"><span class="frac"><span><var>GMm</var></span><span><var>r</var>²</span></span> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p><p class="ln" data-s="3"><var>v</var> = <span class="sqrt">√<span><span class="frac"><span><var>GM</var></span><span><var>r</var></span></span></span></span></p><p class="ln" data-s="4"><var>v</var> = <span class="sqrt">√<span><span class="frac"><span>(6.67 × 10<sup>−11</sup>)(6.0 × 10<sup>24</sup>)</span><span>1.0 × 10<sup>7</sup></span></span></span></span></p><p class="ln ans" data-s="5" id="p8-v"><var>v</var> = 6.33 × 10<sup>3</sup> m/s</p></div><div class="col y"><p class="ln" data-s="6"><var>T</var> = <span class="frac"><span>2π<var>r</var></span><span><var>v</var></span></span> = <span class="frac"><span>2π(1.0 × 10<sup>7</sup>)</span><span><span class="carry" data-from="p8-v">6.33 × 10<sup>3</sup></span></span></span><span class="tag"><var>v</var> carried from the <var>c</var>-column</span></p><p class="ln ans" data-s="7"><var>T</var> = 9.93 × 10<sup>3</sup> s</p></div><svg class="arrows" aria-hidden="true"></svg></div><div class="narr" aria-live="polite"></div><div class="ctrl"><button type="button" data-act="prev">Previous</button><button type="button" class="primary" data-act="next">Next step</button><button type="button" data-act="all">Show all</button><button type="button" data-act="reset">Start over</button></div><ol class="print-notes"></ol></div>
+    <div class="work print-only"><div class="fbd-box">Free-body diagram</div><div class="tchart blank"><div class="th x sm">c (toward planet)</div><div class="th y sm">One lap</div><div class="col x"><p class="ln">Σ<var>F</var><sub>c</sub> = <span class="frac"><span><var>m</var><var>v</var>²</span><span><var>r</var></span></span></p></div><div class="col y"><p class="ln"><var>T</var> = <span class="frac"><span>2π<var>r</var></span><span><var>v</var></span></span></p></div></div></div>
+  </div>
+  <div class="prob" data-hint="T²/a³ is the same for every planet orbiting the Sun.">
+    <h3>Practice 9 <span class="ptype">Kepler’s third law</span></h3>
+    <p>Use Kepler’s third law with Earth as the reference (Earth: <var>a</var> = 1 AU, <var>T</var> = 1 year). Find the period of a planet whose orbit has <var>a</var> = 4 AU, and the orbit size of a planet with a period of 27 years.</p>
+    <div class="answers"><label><var>T</var> = <input type="number" step="any" inputmode="decimal" data-ans="8" aria-label="period"> years</label><label><var>a</var> = <input type="number" step="any" inputmode="decimal" data-ans="9" aria-label="orbit size"> AU</label></div>
+    <div class="pctrl"><button type="button" class="primary check">Check</button><button type="button" class="showsol" aria-expanded="false">Show solution</button></div>
+    <p class="fb" aria-live="polite"></p>
+    <div class="psol" hidden data-stepper="p9"><div class="tchart"><div class="th x sm"><var>a</var> = 4 AU</div><div class="th y sm"><var>T</var> = 27 years</div><div class="col x"><p class="ln" data-s="1"><span class="frac"><span><var>T</var>²</span><span><var>a</var>³</span></span> = 1 yr²/AU³</p><p class="ln" data-s="2"><var>T</var>² = 4³ = 64</p><p class="ln ans" data-s="3"><var>T</var> = 8 years</p></div><div class="col y"><p class="ln" data-s="4"><span class="frac"><span><var>T</var>²</span><span><var>a</var>³</span></span> = 1 yr²/AU³</p><p class="ln" data-s="5"><var>a</var>³ = 27² = 729</p><p class="ln ans" data-s="6"><var>a</var> = 9 AU</p></div><svg class="arrows" aria-hidden="true"></svg></div><div class="narr" aria-live="polite"></div><div class="ctrl"><button type="button" data-act="prev">Previous</button><button type="button" class="primary" data-act="next">Next step</button><button type="button" data-act="all">Show all</button><button type="button" data-act="reset">Start over</button></div><ol class="print-notes"></ol></div>
+    <div class="work print-only"><div class="tchart blank"><div class="th x sm">a = 4 AU</div><div class="th y sm">T = 27 years</div><div class="col x"><p class="ln">T²/a³ = 1</p></div><div class="col y"><p class="ln">T²/a³ = 1</p></div></div></div>
+  </div></section><section id="key" class="print-only"><h2>Answer key</h2></section>
+</main>
+<script>
+const NOTES = {"w1": ["Find the circle first. The car turns around a center 50 m away, in a horizontal plane. The <var>c</var>-column points toward that center and gets <var>mv</var>²/<var>r</var>. The car doesn’t move up or down, so the <var>y</var>-column gets 0.", "Only one real force points toward the center: static friction from the road, pushing sideways on the tires. Friction plays the role of the centripetal force.", "Vertically: <var>F</var><sub>N</sub> up (+), <var>F</var><sub>g</sub> down (−).", "The <var>c</var>-column has two unknowns (<var>F</var><sub>f</sub> and <var>v</var>). The <var>y</var>-column has only <var>F</var><sub>N</sub>.", "<var>F</var><sub>g</sub> = <var>mg</var> = 1000(10) = 10 000 N.", "At top speed, static friction is at its maximum: <var>F</var><sub>f</sub> = μ<sub>s</sub><var>F</var><sub>N</sub>.", "Carry <var>F</var><sub>N</sub> across and plug in.", "8000 = 20<var>v</var>², so <var>v</var>² = 400.", "Box it: <var>v</var> = 20 m/s (about 45 mph). The mass cancels (μ<sub>s</sub><var>g</var> = <var>v</var>²/<var>r</var>), so a truck and a sports car have the same top speed on this curve."], "w2": ["At the top of the loop the rider is upside down, and the center of the circle is straight below them. “Toward the center” means down.", "Both forces point down, toward the center: gravity, and the track pressing down on the rider (<var>F</var><sub>N</sub>). Both are +.", "Isolate <var>F</var><sub>N</sub>.", "<var>F</var><sub>g</sub> = 600 N and <var>v</var>² = 225.", "Box it: <var>F</var><sub>N</sub> = 750 N. That’s the rider’s apparent weight: more than their 600 N true weight, even while upside down.", "How slow could the rider go and still stay on the track? Same column, same start.", "At the slowest possible speed the track barely touches the rider, so <var>F</var><sub>N</sub> = 0. Gravity alone supplies the centripetal force.", "The mass cancels: <var>v</var> = √(<var>gr</var>).", "Box it: <var>v</var><sub>min</sub> = 10 m/s. Any slower and the rider would fall away from the track, which is why coasters have restraints."], "w3": ["The ball moves in a horizontal circle at a constant height: <var>c</var>-column toward the center gets <var>mv</var>²/<var>r</var>; the <var>y</var>-column gets 0.", "Tension is the only force with a part in both columns. Its horizontal part points toward the center; its vertical part points up.", "The angle is measured from the vertical, so the vertical part uses cos θ and the horizontal part uses sin θ.", "The <var>y</var>-column has only one unknown, <var>T</var>.", "<var>F</var><sub>g</sub> = <var>mg</var> = 20 N and cos 37° ≈ 0.8.", "Box it: <var>T</var> = 25 N.", "Carry <var>T</var> across. The radius is <var>r</var> = <var>L</var> sin θ = 2.0(0.6) = 1.2 m, not the string length.", "15 = 2<var>v</var>²/1.2, so <var>v</var>² = 9.", "Box it: <var>v</var> = 3 m/s. Dividing the two columns gives a shortcut: tan θ = <var>v</var>²/(<var>gr</var>)."], "w4": ["Start from the field equation for the surface of Earth: <var>g</var> = <var>GM</var>/<var>R</var>².", "We know Earth’s surface field: about 10 m/s², which is the same as 10 N/kg.", "Write the same equation for Planet X, using 2<var>M</var> and 2<var>R</var>.", "Square the 2 in the denominator: (2<var>R</var>)² = 4<var>R</var>². So Planet X’s field is 2/4 of Earth’s.", "<var>GM</var>/<var>R</var>² is exactly Earth’s <var>g</var>.", "Carry Earth’s <var>g</var> across.", "Box it: <var>g</var><sub>X</sub> = 5 m/s². Doubling the mass doubles <var>g</var>, but doubling the radius divides it by 4.", "Weight is the field times the mass placed in it: <var>F</var><sub>g</sub> = <var>mg</var>.", "Box it: the student weighs 250 N on Planet X, half their Earth weight. Their mass is still 50 kg."], "w5": ["Gravity is the only force on the satellite, and it points toward Earth’s center. The <var>c</var>-column gets <var>mv</var>²/<var>r</var>.", "Gravity plays the role of the centripetal force.", "Use Newton’s law of gravitation for <var>F</var><sub>g</sub>. <var>M</var> is Earth’s mass; <var>m</var> is the satellite’s mass.", "The satellite’s mass <var>m</var> cancels, and so does one <var>r</var>. Orbital speed doesn’t depend on the satellite’s mass.", "<var>r</var> is measured from Earth’s center: 6.37 × 10<sup>6</sup> m (Earth’s radius) + 0.40 × 10<sup>6</sup> m (the altitude).", "Box it: about 7.7 km/s, roughly 17,000 mph.", "Speed is distance over time. One lap is a circumference, 2π<var>r</var>, and it takes one period, <var>T</var>.", "Solve for <var>T</var>.", "Carry <var>v</var> across.", "Box it: about 92 minutes per lap. The ISS circles Earth about 16 times a day."], "p1": ["A horizontal circle: the <var>c</var>-column gets <var>mv</var>²/<var>r</var>. The ball stays on the table, so the <var>y</var>-column gets 0.", "Tension is the only force toward the center. Vertically, <var>F</var><sub>N</sub> balances <var>F</var><sub>g</sub>.", "Plug in <var>m</var> = 0.5 kg, <var>v</var> = 4 m/s, <var>r</var> = 0.8 m. Vertically, <var>F</var><sub>N</sub> = <var>mg</var> = 5 N.", "Box it: <var>T</var> = 10 N.", "Centripetal acceleration: <var>a</var><sub>c</sub> = <var>v</var>²/<var>r</var>.", "Box it: <var>a</var><sub>c</sub> = 20 m/s² toward the center. Check: <var>T</var> = <var>ma</var><sub>c</sub> = 0.5(20) = 10 N ✓"], "p2": ["A flat curve: the <var>c</var>-column (toward the center) gets <var>mv</var>²/<var>r</var>. The car doesn’t move vertically, so the <var>y</var>-column gets 0.", "Static friction is the only force pointing toward the center.", "<var>m</var> = 1200 kg, <var>v</var> = 10 m/s, <var>r</var> = 40 m.", "Box it: the road must supply 3000 N of friction.", "Vertically, <var>F</var><sub>N</sub> balances <var>F</var><sub>g</sub>.", "Box it: <var>F</var><sub>N</sub> = <var>mg</var> = 12 000 N.", "The smallest μ<sub>s</sub> that works makes the needed friction equal the maximum: <var>F</var><sub>f</sub> = μ<sub>s</sub><var>F</var><sub>N</sub>. Carry <var>F</var><sub>N</sub> across.", "Box it: μ<sub>s</sub> = 0.25. Any road with μ<sub>s</sub> of at least 0.25 holds the car."], "p3": ["At the crest, the center of the curve is below the driver, so “toward the center” means down.", "Gravity points toward the center (+). The seat’s normal force points up, away from the center (−).", "Isolate <var>F</var><sub>N</sub>, the driver’s apparent weight.", "<var>mg</var> = 500 N and <var>mv</var>²/<var>r</var> = 50(100)/20 = 250 N.", "Box it: <var>F</var><sub>N</sub> = 250 N. The driver feels half as heavy at the crest.", "Now find the speed where the driver just barely loses contact with the seat.", "At that speed <var>F</var><sub>N</sub> = 0, so gravity alone supplies the centripetal force.", "The mass cancels: <var>v</var> = √(<var>gr</var>).", "Box it: about 14.1 m/s. Any faster and the car leaves the road at the crest."], "p4": ["At the top, the center of the circle is below the bucket, so “toward the center” means down.", "Both forces point toward the center: the rope pulls the bucket down toward your hand, and gravity pulls it down.", "<var>mv</var>²/<var>r</var> = 2(36)/0.9 = 80 N, and <var>mg</var> = 20 N.", "Box it: <var>T</var> = 60 N.", "For the minimum speed, start the same way.", "At the slowest speed the rope just goes slack: <var>T</var> = 0. Gravity alone supplies the centripetal force.", "The mass cancels: <var>v</var> = √(<var>gr</var>).", "Box it: <var>v</var><sub>min</sub> = 3 m/s. Any slower and the water falls out."], "p5": ["At the bottom of the loop, the center is above the rider, so “toward the center” means up.", "<var>F</var><sub>N</sub> points up, toward the center (+). Gravity points down, away from it (−).", "Isolate <var>F</var><sub>N</sub>.", "<var>mg</var> = 500 N and <var>mv</var>²/<var>r</var> = 50(144)/8 = 900 N.", "Box it: <var>F</var><sub>N</sub> = 1400 N.", "Compare apparent weight to true weight. Carry <var>F</var><sub>N</sub> across.", "Box it: 2.8 times. The rider feels like they weigh 2.8 times as much (2.8 “g’s”)."], "p6": ["A horizontal circle: the <var>c</var>-column toward the center gets <var>mv</var>²/<var>r</var>; the <var>y</var>-column gets 0.", "The horizontal part of tension points toward the center. The angle is from the vertical, so that part uses sin θ.", "Vertically, the upward part of tension balances gravity: <var>T</var> cos θ − <var>mg</var> = 0.", "The <var>y</var>-column has one unknown. <var>mg</var> = 5 N and cos 45° ≈ 0.707.", "Box it: <var>T</var> = 7.07 N.", "Carry <var>T</var> across. <var>T</var> sin 45° = 5 N toward the center.", "5 = 0.5<var>v</var>²/0.4, so <var>v</var>² = 4.", "Box it: <var>v</var> = 2 m/s."], "p7": ["Write the field equation for Earth’s surface.", "Earth’s surface field is about 10 m/s².", "For the planet, use 3<var>M</var> and 2<var>R</var>.", "(2<var>R</var>)² = 4<var>R</var>², so the planet’s <var>g</var> is 3/4 of Earth’s.", "Carry Earth’s <var>g</var> across.", "Box it: <var>g</var> = 7.5 m/s².", "Weight is mass times field.", "Box it: the student weighs 450 N there."], "p8": ["Gravity is the only force, and it points toward the planet’s center.", "Gravity supplies the centripetal force. Use Newton’s law of gravitation.", "The satellite’s mass cancels, so it doesn’t matter.", "Plug in <var>G</var>, <var>M</var>, and <var>r</var>.", "Box it: about 6.33 × 10<sup>3</sup> m/s.", "One lap: <var>T</var> = 2π<var>r</var>/<var>v</var>. Carry <var>v</var> across.", "Box it: about 9.93 × 10<sup>3</sup> s, or about 2.8 hours."], "p9": ["For anything orbiting the Sun, <var>T</var>²/<var>a</var>³ is the same as Earth’s: (1 yr)²/(1 AU)³ = 1.", "So <var>T</var>² = <var>a</var>³ = 64.", "Box it: <var>T</var> = 8 years.", "The same rule works for the second planet.", "<var>a</var>³ = 27² = 729.", "Box it: <var>a</var> = 9 AU, since 9³ = 729."]};
+function drawArrows(chart, cur){
+  const svg = chart.querySelector("svg.arrows");
+  if(!svg) return;
+  svg.innerHTML = "";
+  const box = chart.getBoundingClientRect();
+  if(!box.width) return;
+  svg.setAttribute("viewBox", `0 0 ${box.width} ${box.height}`);
+  chart.querySelectorAll("[data-from]").forEach(t => {
+    const line = t.closest(".ln");
+    if(+line.dataset.s > cur) return;
+    const src = document.getElementById(t.dataset.from);
+    if(!src || +src.dataset.s > cur) return;
+    const a = src.getBoundingClientRect(), b = t.getBoundingClientRect();
+    const toLeft = b.left + b.width/2 < a.left;
+    const sx = (toLeft ? a.left : a.right) - box.left;
+    const sy = a.top + a.height/2 - box.top;
+    const tg = line.querySelector(".tag");
+    let d;
+    if(tg){
+      const r = tg.getBoundingClientRect();
+      const ex = (toLeft ? r.right + 6 : r.left - 6) - box.left;
+      const ey = r.top + r.height/2 - box.top;
+      const k = toLeft ? -1 : 1;
+      d = `M${sx},${sy} C${sx + k*60},${sy} ${ex - k*60},${ey} ${ex},${ey}`;
+    } else {
+      const ex = b.left + b.width/2 - box.left, ey = b.bottom - box.top + 6;
+      d = `M${sx},${sy} C${sx + (ex - sx) * 0.6},${sy} ${ex},${ey + 46} ${ex},${ey}`;
+    }
+    const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    p.setAttribute("d", d);
+    p.setAttribute("marker-end", "url(#ahc)");
+    svg.appendChild(p);
+  });
+}
+
+const redraws = [];
+document.querySelectorAll("[data-stepper]").forEach(wrap => {
+  const notes = NOTES[wrap.dataset.stepper];
+  const chart = wrap.querySelector(".tchart:not(.blank)");
+  const lines = [...chart.querySelectorAll(".ln[data-s]")];
+  const max = Math.max(...lines.map(l => +l.dataset.s));
+  const narr = wrap.querySelector(".narr");
+  const btn = a => wrap.querySelector(`.ctrl [data-act="${a}"]`);
+  let cur = 0;
+  const ol = wrap.querySelector(".print-notes");
+  notes.forEach(n => { const li = document.createElement("li"); li.innerHTML = n; ol.appendChild(li); });
+  function render(){
+    lines.forEach(l => {
+      const s = +l.dataset.s;
+      l.classList.toggle("hid", s > cur);
+      l.classList.toggle("now", s === cur);
+    });
+    narr.innerHTML = cur === 0
+      ? "Press <strong>Next step</strong> to build the solution one line at a time."
+      : `<strong>Step ${cur} of ${max}.</strong> ${notes[cur-1]}`;
+    btn("prev").disabled = cur === 0;
+    btn("next").disabled = cur === max;
+    btn("all").disabled = cur === max;
+    drawArrows(chart, cur);
+  }
+  wrap.querySelector(".ctrl").addEventListener("click", e => {
+    const act = e.target.closest("button")?.dataset.act;
+    if(act === "next") cur = Math.min(max, cur + 1);
+    else if(act === "prev") cur = Math.max(0, cur - 1);
+    else if(act === "all") cur = max;
+    else if(act === "reset") cur = 0;
+    else return;
+    render();
+  });
+  redraws.push(() => drawArrows(chart, cur));
+  render();
+});
+window.addEventListener("resize", () => redraws.forEach(f => f()));
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(() => redraws.forEach(f => f()));
+
+
+/* ---------- Helpers ---------- */
+const $ = id => document.getElementById(id);
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const G = 6.67e-11, g0 = 10;
+function fmt(x, d = 1){
+  if(!isFinite(x)) return "–";
+  if(Math.abs(x - Math.round(x)) < 0.005 && Math.abs(x) >= 1) return Math.round(x).toLocaleString("en-US").replace(/,/g, " ");
+  let s = x.toFixed(d);
+  if(s.includes(".")) s = s.replace(/\.?0+$/, "");
+  return s;
+}
+function sci(x, d = 2){
+  if(x === 0) return "0";
+  const e = Math.floor(Math.log10(Math.abs(x)));
+  if(e >= -2 && e <= 4) return fmt(x, d);
+  const m = x / Math.pow(10, e);
+  return `${m.toFixed(d)} × 10<sup>${e < 0 ? "−" + (-e) : e}</sup>`;
+}
+function lab(main, sub = "", rest = "", size = 11){
+  let s = `<tspan class="it">${main}</tspan>`;
+  if(sub) s += `<tspan dy="4" font-size="${size}">${sub}</tspan><tspan dy="-4">${rest}</tspan>`;
+  else if(rest) s += `<tspan>${rest}</tspan>`;
+  return s;
+}
+function arrow(x1, y1, x2, y2, cls = "s", marker = "ah"){
+  if(Math.hypot(x2 - x1, y2 - y1) < 4) return "";
+  return `<line class="${cls}" x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" marker-end="url(#${marker})"/>`;
+}
+function text(x, y, html, anchor = "start", size = 14, cls = ""){
+  return `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="${anchor}" font-size="${size}"${cls ? ` class="${cls}"` : ""}>${html}</text>`;
+}
+function centerMark(x, y){
+  return `<line class="s thin" x1="${x - 6}" y1="${y}" x2="${x + 6}" y2="${y}"/><line class="s thin" x1="${x}" y1="${y - 6}" x2="${x}" y2="${y + 6}"/>`;
+}
+function segButtons(root, items, onPick, initial){
+  const btns = items.map(([id, label]) => {
+    const b = document.createElement("button"); b.type = "button"; b.textContent = label;
+    b.style.fontSize = ".88rem"; b.style.padding = ".35rem .75rem";
+    b.addEventListener("click", () => { set(id); onPick(id); });
+    root.appendChild(b); return [id, b];
+  });
+  function set(id){ btns.forEach(([i, b]) => b.setAttribute("aria-pressed", String(i === id))); }
+  set(initial);
+}
+/* Runs step(dt) every frame while the element is on screen */
+function animate(el, step){
+  let visible = false, running = false, last = null;
+  const tick = now => {
+    if(!visible){ running = false; return; }
+    const dt = last === null ? 0 : Math.min(0.05, (now - last) / 1000);
+    last = now; step(dt); requestAnimationFrame(tick);
+  };
+  new IntersectionObserver(es => {
+    visible = es[0].isIntersecting;
+    if(visible && !running){ running = true; last = null; requestAnimationFrame(tick); }
+  }).observe(el);
+}
+function playButton(btn, state){
+  const sync = () => btn.textContent = state.playing ? "Pause" : "Play";
+  btn.addEventListener("click", () => { state.playing = !state.playing; sync(); });
+  sync();
+}
+
+/* ---------- Sorter / quiz ---------- */
+function makeSorter(root, cats, items, scoreEl){
+  let score = 0, done = 0;
+  items.forEach(([q, ans, why], i) => {
+    const d = document.createElement("div"); d.className = "sort-item";
+    d.innerHTML = `<p class="q">${i + 1}. ${q}</p><div class="seg" role="group" aria-label="Choices"></div><p class="fb" aria-live="polite"></p>`;
+    const seg = d.querySelector(".seg"), fb = d.querySelector(".fb");
+    let answered = false;
+    cats.forEach((c, j) => {
+      const b = document.createElement("button"); b.type = "button"; b.innerHTML = c;
+      b.addEventListener("click", () => {
+        if(answered) return;
+        if(j === ans){
+          answered = true; b.classList.add("right");
+          fb.innerHTML = `✓ <strong>Yes.</strong> ${why}`;
+          if(!d.dataset.miss) score++;
+          done++;
+          seg.querySelectorAll("button").forEach(x => x.disabled = x !== b);
+          if(done === items.length) scoreEl.textContent = `You got ${score} of ${items.length} on the first try.`;
+        } else {
+          d.dataset.miss = 1; b.classList.add("wrong"); b.disabled = true;
+          fb.innerHTML = "✗ Not quite. Try again.";
+        }
+      });
+      seg.appendChild(b);
+    });
+    root.appendChild(d);
+  });
+}
+makeSorter($("vq"), ["A", "B", "C", "D"], [
+  ["Which arrow shows the puck’s velocity?", 0, "Velocity is tangent to the circle. Moving counterclockwise at 3 o’clock, the puck is heading straight up the page."],
+  ["Which arrow shows its centripetal acceleration?", 1, "Centripetal acceleration points toward the center of the circle."],
+  ["Which arrow shows the net force on the puck?", 1, "By Newton’s second law, the net force points the same way as the acceleration: toward the center. Here the string’s tension supplies it."],
+  ["If the string snapped right now, which way would the puck go?", 0, "With no net force, the puck keeps its velocity (Newton’s first law) and slides off along the tangent."],
+  ["Which arrow shows a force that does NOT act on the puck, even though people often draw it?", 2, "There is no outward “centrifugal” force on the puck. Only the string pulls on it horizontally, and it pulls inward."]
+], $("vq-score"));
+makeSorter($("sorter"), ["Tension", "Friction", "Gravity", "Normal force"], [
+  ["A ball whirled on a string in a horizontal circle on a frictionless table.", 0, "The string pulls the ball toward the center."],
+  ["A car rounding a flat, unbanked curve.", 1, "Static friction from the road pushes sideways on the tires, toward the center of the curve."],
+  ["The Moon orbiting Earth.", 2, "Earth’s gravity pulls the Moon toward Earth’s center."],
+  ["A rider pinned against the wall of a spinning rotor ride.", 3, "The wall pushes inward on the rider. (Friction from the wall points up and holds the rider’s weight.)"],
+  ["Wet clothes in a washing machine during the spin cycle.", 3, "The drum’s wall pushes the clothes inward. Water escapes through the holes because nothing pushes it inward."],
+  ["A coin sitting on a spinning turntable without sliding.", 1, "Static friction from the turntable pulls the coin toward the center."],
+  ["A satellite in a circular orbit.", 2, "Gravity is the only force on it, and it points toward Earth’s center."]
+], $("sort-score"));
+
+/* ---------- Circle explorer ---------- */
+(function(){
+  const SC = {
+    ball: {label: "Ball on a string", force: ["T", ""], forceName: "tension in the string", cut: "Cut the string", r: [0.5, 2, 0.1, 1], v: [1, 10, 0.5, 4], m: [0.1, 2, 0.1, 0.5]},
+    car: {label: "Car on a flat curve", force: ["F", "f"], forceName: "static friction from the road", cut: "Hit a patch of ice", r: [20, 100, 5, 50], v: [5, 30, 1, 20], m: [800, 2000, 100, 1000]},
+    bank: {label: "Banked curve", force: ["ΣF", ""], forceName: "the tilted normal force (plus friction, if any)", cut: "Set the ideal speed", r: [20, 100, 5, 50], v: [5, 30, 0.1, 15], m: [800, 2000, 100, 1000]}
+  };
+  const cx = 210, cy = 160, R = 115;
+  const st = {sc: "ball", phi: 0.6, playing: !reduceMotion, rel: null};
+  function setRanges(){
+    const c = SC[st.sc];
+    [["r", c.r], ["v", c.v], ["m", c.m]].forEach(([k, [mn, mx, step, val]]) => {
+      const el = $("circ-" + k); el.min = mn; el.max = mx; el.step = step; el.value = val;
+    });
+    $("circ-cut").textContent = c.cut;
+    const bank = st.sc === "bank";
+    $("circ-th-wrap").hidden = !bank; $("circ-bank-fig").hidden = !bank;
+  }
+  segButtons($("circ-sc"), [["ball", SC.ball.label], ["car", SC.car.label], ["bank", SC.bank.label]], id => { st.sc = id; st.rel = null; setRanges(); draw(); }, "ball");
+  ["circ-r", "circ-v", "circ-m", "circ-th"].forEach(id => $(id).addEventListener("input", () => { st.rel = null; draw(); }));
+  playButton($("circ-play"), st);
+  $("circ-cut").addEventListener("click", () => {
+    if(st.sc === "bank"){
+      const {r} = vals(), th = +$("circ-th").value * Math.PI / 180;
+      $("circ-v").value = Math.min(30, Math.max(5, Math.sqrt(g0 * r * Math.tan(th)))).toFixed(1);
+      draw(); return;
+    }
+    if(st.rel) return;
+    const px = cx + R * Math.cos(st.phi), py = cy - R * Math.sin(st.phi);
+    st.rel = {x: px, y: py, tx: -Math.sin(st.phi), ty: -Math.cos(st.phi), d: 0};
+    if(reduceMotion) st.rel.d = 160;
+    draw();
+  });
+  $("circ-reset").addEventListener("click", () => { st.rel = null; st.phi = 0.6; draw(); });
+  const vals = () => ({r: +$("circ-r").value, v: +$("circ-v").value, m: +$("circ-m").value});
+  const omegaVis = () => { const {r, v} = vals(); return Math.min(2.6, Math.max(0.6, 0.5 * v / r)); };
+  function draw(){
+    const c = SC[st.sc], {r, v, m} = vals();
+    $("circ-r-out").textContent = fmt(r, 1) + " m"; $("circ-v-out").textContent = fmt(v, 1) + " m/s"; $("circ-m-out").textContent = fmt(m, 1) + " kg";
+    let g = "";
+    if(st.sc !== "ball"){
+      g += `<circle class="s thin" cx="${cx}" cy="${cy}" r="${R - 17}" fill="none"/><circle class="s thin" cx="${cx}" cy="${cy}" r="${R + 17}" fill="none"/>`;
+    } else {
+      g += `<circle class="s dash thin" cx="${cx}" cy="${cy}" r="${R}" fill="none"/>`;
+    }
+    g += centerMark(cx, cy) + text(cx, cy + 22, "center", "middle", 12, "lab");
+    let px, py, tx, ty;
+    if(st.rel){
+      tx = st.rel.tx; ty = st.rel.ty; px = st.rel.x + tx * st.rel.d; py = st.rel.y + ty * st.rel.d;
+      g += `<line class="s ref" x1="${st.rel.x.toFixed(1)}" y1="${st.rel.y.toFixed(1)}" x2="${px.toFixed(1)}" y2="${py.toFixed(1)}"/>`;
+      if(st.sc === "ball") g += `<line class="s thin" x1="${cx}" y1="${cy}" x2="${(cx + (st.rel.x - cx) * 0.35).toFixed(1)}" y2="${(cy + (st.rel.y - cy) * 0.35).toFixed(1)}"/>`;
+    } else {
+      px = cx + R * Math.cos(st.phi); py = cy - R * Math.sin(st.phi); tx = -Math.sin(st.phi); ty = -Math.cos(st.phi);
+      if(st.sc === "ball") g += `<line class="s thin" x1="${cx}" y1="${cy}" x2="${px.toFixed(1)}" y2="${py.toFixed(1)}"/>`;
+      else g += `<line class="s ref" x1="${cx}" y1="${cy}" x2="${px.toFixed(1)}" y2="${py.toFixed(1)}"/>`;
+    }
+    // vectors
+    g += arrow(px, py, px + tx * 66, py + ty * 66) + text(px + tx * 80, py + ty * 80 + 5, lab("v"), "middle");
+    if(!st.rel){
+      const ux = (cx - px) / R, uy = (cy - py) / R, ox = -uy, oy = ux;
+      const fx = px + ox * 8, fy = py + oy * 8, ax = px - ox * 8, ay = py - oy * 8;
+      g += arrow(fx, fy, fx + ux * 50, fy + uy * 50) + text(fx + ux * 50 + ox * 14, fy + uy * 50 + oy * 14 + 5, lab(c.force[0], c.force[1]), "middle");
+      g += arrow(ax, ay, ax + ux * 50, ay + uy * 50, "s dash thin") + text(ax + ux * 50 - ox * 16, ay + uy * 50 - oy * 16 + 5, lab("a", "c"), "middle");
+    }
+    // object
+    if(st.sc !== "ball"){
+      const ang = Math.atan2(ty, tx) * 180 / Math.PI;
+      g += `<rect class="s fp" x="${(px - 15).toFixed(1)}" y="${(py - 8).toFixed(1)}" width="30" height="16" rx="3" transform="rotate(${ang.toFixed(1)} ${px.toFixed(1)} ${py.toFixed(1)})"/>`;
+    } else g += `<circle class="s fp" cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="9"/>`;
+    $("circ-svg").innerHTML = g;
+    const P = 2 * Math.PI * r / v, ac = v * v / r, Fc = m * ac;
+    let out = `<p class="m"><var>v</var> = ${fmt(v, 1)} m/s, tangent to the circle</p>
+      <p class="m">Period: <var>T</var> = 2π<var>r</var>/<var>v</var> = ${fmt(P, 2)} s</p>
+      <p class="m"><var>a</var><sub>c</sub> = <var>v</var>²/<var>r</var> = ${fmt(ac, 1)} m/s², toward the center</p>
+      <p class="m"><var>F</var><sub>c</sub> = <var>mv</var>²/<var>r</var> = ${fmt(Fc, 1)} N, supplied by ${c.forceName}</p>`;
+    if(st.sc === "bank") out = bankReadout(r, v, m, Fc, out);
+    if(st.sc === "car") out += `<p class="m">The road needs μ<sub>s</sub> of at least <var>v</var>²/(<var>gr</var>) = ${fmt(v * v / (g0 * r), 2)}</p>`;
+    if(st.sc !== "bank" && st.rel) out += `<p class="verdict">With nothing pulling it toward the center, the velocity stops changing. It moves in a straight line along the tangent (Newton’s first law), not straight outward.</p>`;
+    else if(st.sc !== "bank") out += `<p class="verdict">Double the speed and see what happens to <var>a</var><sub>c</sub>: it goes up 4 times, because <var>v</var> is squared.</p>`;
+    $("circ-read").innerHTML = out;
+  }
+  function bankReadout(r, v, m, Fc, out){
+    const deg = +$("circ-th").value; $("circ-th-out").textContent = deg + "°";
+    const th = deg * Math.PI / 180, s = Math.sin(th), c = Math.cos(th);
+    const ac = v * v / r, FN = m * (g0 * c + ac * s), f = m * (ac * c - g0 * s), mg = m * g0;
+    const vi = Math.sqrt(g0 * r * Math.tan(th));
+    const small = Math.abs(f) < 0.005 * mg;
+    drawBank(deg, s, c, FN, f, mg, small);
+    let fric;
+    if(small) fric = `<strong>None.</strong> At this speed the normal force alone does the job.`;
+    else fric = `<strong>${fmt(Math.round(Math.abs(f)))} N ${f > 0 ? "down the bank (toward the inside)" : "up the bank (toward the outside)"}</strong>, so the tires need μ<sub>s</sub> of at least ${fmt(Math.abs(f) / FN, 2)}.`;
+    return out + `<p class="m">Ideal speed (no friction needed): <var>v</var> = √(<var>gr</var> tan θ) = ${fmt(vi, 1)} m/s</p>
+      <p class="m">Normal force: <var>F</var><sub>N</sub> = ${fmt(Math.round(FN))} N; its part toward the center, <var>F</var><sub>N</sub> sin θ = ${fmt(Math.round(FN * s))} N</p>
+      <p>Friction needed: ${fric}</p>
+      <p class="verdict">${small ? "At the ideal speed, F<sub>N</sub> sin θ supplies the whole centripetal force and F<sub>N</sub> cos θ holds up the car. Dividing the two gives tan θ = v²/(gr)." : v > vi ? "Faster than the ideal speed, the car would slide up and out, so friction has to point down the bank." : "Slower than the ideal speed, the car would slide down and in, so friction has to point up the bank."}</p>`;
+  }
+  function drawBank(deg, s, c, FN, f, mg, small){
+    const O = [260, 150], h = 125, k = 85 / mg;
+    const L = [O[0] - h * c, O[1] + h * s], Rt = [O[0] + h * c, O[1] - h * s];
+    let g = `<polygon class="s fpan thin" points="${L[0].toFixed(1)},${L[1].toFixed(1)} ${Rt[0].toFixed(1)},${Rt[1].toFixed(1)} ${Rt[0].toFixed(1)},245 ${L[0].toFixed(1)},245"/>`;
+    g += `<line class="s ref" x1="${L[0].toFixed(1)}" y1="${L[1].toFixed(1)}" x2="${(L[0] + 90).toFixed(1)}" y2="${L[1].toFixed(1)}"/>`;
+    g += `<path class="s thin" d="M${(L[0] + 40).toFixed(1)},${L[1].toFixed(1)} A40,40 0 0 0 ${(L[0] + 40 * c).toFixed(1)},${(L[1] - 40 * s).toFixed(1)}"/>` + text(L[0] + 46, L[1] - 6, "θ", "start", 14, "it");
+    const nx = -s, ny = -c, C = [O[0] + nx * 13, O[1] + ny * 13];
+    g += `<rect class="s fp" x="${(C[0] - 28).toFixed(1)}" y="${(C[1] - 13).toFixed(1)}" width="56" height="26" transform="rotate(${-deg} ${C[0].toFixed(1)} ${C[1].toFixed(1)})"/>`;
+    const NL = Math.min(FN * k, 150), nE = [C[0] + nx * NL, C[1] + ny * NL];
+    g += arrow(C[0], C[1], C[0], C[1] - NL * c, "s dash thin") + text(C[0] + 8, C[1] - NL * c / 2 - 6, lab("F", "N", " cos θ"), "start", 13);
+    g += arrow(C[0], C[1] - NL * c, C[0] - NL * s + 2, C[1] - NL * c, "s dash thin") + text(C[0] - NL * s / 2, C[1] - NL * c - 12, lab("F", "N", " sin θ"), "middle", 13);
+    g += arrow(C[0], C[1], nE[0], nE[1]) + text(C[0] + nx * NL * 0.6 - 10, C[1] + ny * NL * 0.6 + 4, lab("F", "N"), "end");
+    g += arrow(C[0], C[1], C[0], C[1] + 70) + text(C[0] + 8, C[1] + 66, lab("F", "g"), "start");
+    if(!small){
+      const FL = Math.max(14, Math.min(Math.abs(f) * k, 90)), dir = f > 0 ? [-c, s] : [c, -s];
+      const P0 = [O[0] + dir[0] * 32 + nx * 3, O[1] + dir[1] * 32 + ny * 3];
+      g += arrow(P0[0], P0[1], P0[0] + dir[0] * FL, P0[1] + dir[1] * FL) + text(P0[0] + dir[0] * (FL + 10), P0[1] + dir[1] * (FL + 10) + (f > 0 ? 16 : -4), lab("F", "f"), "middle");
+    }
+    g += arrow(70, 30, 20, 30, "s thin") + text(45, 22, lab("a", "c"), "middle") + text(12, 52, "← center of the curve", "start", 12, "lab");
+    $("circ-bank").innerHTML = g;
+  }
+  setRanges();
+  animate($("circ-svg"), dt => {
+    if(!st.playing) return;
+    if(st.rel){ if(st.rel.d < 260){ st.rel.d += R * omegaVis() * dt; draw(); } }
+    else { st.phi += omegaVis() * dt; draw(); }
+  });
+  draw();
+})();
+
+/* ---------- Apparent weight explorer ---------- */
+(function(){
+  let mode = "dip";
+  segButtons($("aw-modes"), [["dip", "Bottom of a dip"], ["hill", "Top of a hill"], ["loop", "Top of a loop"]], id => { mode = id; draw(); }, "dip");
+  ["aw-m", "aw-r", "aw-v"].forEach(id => $(id).addEventListener("input", draw));
+  function draw(){
+    const m = +$("aw-m").value, r = +$("aw-r").value, v = +$("aw-v").value;
+    $("aw-m-out").textContent = m + " kg"; $("aw-r-out").textContent = r + " m"; $("aw-v-out").textContent = v + " m/s";
+    const mg = m * g0, Fc = m * v * v / r, vc = Math.sqrt(g0 * r);
+    let FN, eq, warn = "";
+    if(mode === "dip"){ FN = mg + Fc; eq = `<var>F</var><sub>N</sub> − <var>F</var><sub>g</sub> = <var>mv</var>²/<var>r</var>, so <var>F</var><sub>N</sub> = <var>mg</var> + <var>mv</var>²/<var>r</var> = ${fmt(mg)} + ${fmt(Fc)}`; }
+    else if(mode === "hill"){ FN = mg - Fc; eq = `<var>F</var><sub>g</sub> − <var>F</var><sub>N</sub> = <var>mv</var>²/<var>r</var>, so <var>F</var><sub>N</sub> = <var>mg</var> − <var>mv</var>²/<var>r</var> = ${fmt(mg)} − ${fmt(Fc)}`;
+      if(FN < 0){ warn = `Too fast! Above √(<var>gr</var>) = ${fmt(vc, 1)} m/s, gravity can’t supply enough centripetal force, and the car leaves the road.`; FN = 0; } }
+    else { FN = Fc - mg; eq = `<var>F</var><sub>N</sub> + <var>F</var><sub>g</sub> = <var>mv</var>²/<var>r</var>, so <var>F</var><sub>N</sub> = <var>mv</var>²/<var>r</var> − <var>mg</var> = ${fmt(Fc)} − ${fmt(mg)}`;
+      if(FN < 0){ warn = `Too slow! Below √(<var>gr</var>) = ${fmt(vc, 1)} m/s, gravity pulls harder than the circle needs, and the rider falls away from the track.`; FN = 0; } }
+    const k = 60 / mg;
+    let g = "", P, C, dirN, dirA;
+    if(mode === "dip"){
+      C = [220, 90]; const R = 160;
+      g += `<path class="s" stroke-width="4" d="M97.4,192.8 A${R},${R} 0 0 0 342.6,192.8"/>`;
+      P = [220, 236]; dirN = -1; dirA = -1;
+    } else if(mode === "hill"){
+      C = [220, 240]; const R = 160;
+      g += `<path class="s" stroke-width="4" d="M97.4,137.2 A${R},${R} 0 0 1 342.6,137.2"/>`;
+      P = [220, 66]; dirN = -1; dirA = 1;
+    } else {
+      C = [220, 165];
+      g += `<circle class="s" stroke-width="4" cx="220" cy="165" r="110" fill="none"/>`;
+      P = [220, 70]; dirN = 1; dirA = 1;
+    }
+    g += centerMark(C[0], C[1]) + text(C[0] + 12, C[1] + 4, "center", "start", 12, "lab");
+    g += `<line class="s ref" x1="${C[0]}" y1="${C[1]}" x2="${P[0]}" y2="${P[1]}"/>`;
+    g += `<rect class="s fp" x="${P[0] - 14}" y="${P[1] - 10}" width="28" height="20" rx="3"/>`;
+    const nL = Math.min(FN * k, 150), gL = 60;
+    const nx = mode === "loop" ? P[0] - 8 : P[0], gx = mode === "loop" ? P[0] + 8 : P[0];
+    if(FN > 0) g += arrow(nx, P[1] + dirN * 10, nx, P[1] + dirN * (10 + nL)) + text(nx - 8, P[1] + dirN * (10 + nL) + (dirN < 0 ? 4 : 12), lab("F", "N", ` = ${fmt(FN)} N`), "end");
+    else g += text(P[0] - 22, P[1] + 4, lab("F", "N", " = 0"), "end");
+    g += arrow(gx, P[1] + 10, gx, P[1] + 10 + gL) + text(gx + 8, P[1] + 10 + gL + 4, lab("F", "g", ` = ${fmt(mg)} N`));
+    const ax = P[0] + 95;
+    g += arrow(ax, P[1] + (dirA < 0 ? 0 : -10), ax, P[1] + (dirA < 0 ? -40 : 30), "s dash thin") + text(ax + 8, P[1] + (dirA < 0 ? -18 : 14), lab("a", "c"));
+    if(v > 0) g += arrow(P[0] + 20, P[1] + (mode === "loop" ? -18 : 0), P[0] + 60, P[1] + (mode === "loop" ? -18 : 0), "s thin") ;
+    $("aw-svg").innerHTML = g;
+    $("aw-read").innerHTML = `<p class="m">${eq}</p>
+      <p>Apparent weight: <span class="big">${fmt(FN)} N</span> &nbsp;(${fmt(FN / mg, 2)} × true weight)</p>
+      <p class="verdict">${warn || (FN > mg + 0.5 ? "The rider feels heavier than normal." : FN < mg - 0.5 ? (FN < 1 ? "The rider feels weightless." : "The rider feels lighter than normal.") : "The rider feels their normal weight.")}</p>`;
+  }
+  draw();
+})();
+
+/* ---------- Conical pendulum explorer ---------- */
+(function(){
+  const st = {playing: !reduceMotion, phase: 0};
+  playButton($("cn-play"), st);
+  ["cn-t", "cn-l", "cn-m"].forEach(id => $(id).addEventListener("input", draw));
+  function vals(){
+    const t = +$("cn-t").value, L = +$("cn-l").value, m = +$("cn-m").value, th = t * Math.PI / 180;
+    const s = t === 37 ? 0.6 : Math.sin(th), c = t === 37 ? 0.8 : Math.cos(th);
+    const r = L * s, h = L * c, T = m * g0 / c, v = Math.sqrt(g0 * r * s / c), P = 2 * Math.PI * r / v;
+    return {t, L, m, s, c, r, h, T, v, P};
+  }
+  function draw(){
+    const q = vals();
+    $("cn-t-out").textContent = q.t + "°"; $("cn-l-out").textContent = fmt(q.L, 1) + " m"; $("cn-m-out").textContent = fmt(q.m, 1) + " kg";
+    const sc = 80, px = 220, py = 26, ccy = py + q.h * sc, rx = q.r * sc, ry = Math.max(6, rx * 0.2);
+    const bx = px + rx * Math.cos(st.phase), by = ccy + ry * Math.sin(st.phase);
+    let g = `<rect x="160" y="14" width="120" height="10" fill="url(#hatch)"/><line class="s thin" x1="160" y1="24" x2="280" y2="24"/>`;
+    g += `<ellipse class="s dash thin" cx="${px}" cy="${ccy.toFixed(1)}" rx="${rx.toFixed(1)}" ry="${ry.toFixed(1)}"/>`;
+    g += `<line class="s ref" x1="${px}" y1="${py}" x2="${px}" y2="${ccy.toFixed(1)}"/>`;
+    g += centerMark(px, ccy);
+    g += `<line class="s ref" x1="${px}" y1="${ccy.toFixed(1)}" x2="${(px + rx).toFixed(1)}" y2="${ccy.toFixed(1)}"/>` + text(px + rx / 2, ccy + 18, lab("r"), "middle");
+    const ar = 40, ex = px + ar * q.s, ey = py + ar * q.c;
+    g += `<line class="s ref" x1="${px}" y1="${py}" x2="${(px + rx).toFixed(1)}" y2="${ccy.toFixed(1)}" stroke-dasharray="2 4"/>`;
+    g += `<path class="s thin" d="M${px},${py + ar} A${ar},${ar} 0 0 0 ${ex.toFixed(1)},${ey.toFixed(1)}"/>` + text(px + 6, py + ar + 16, "θ", "start", 14, "it");
+    g += `<line class="s" x1="${px}" y1="${py}" x2="${bx.toFixed(1)}" y2="${by.toFixed(1)}"/>`;
+    const dx = px - bx, dy = py - by, dl = Math.hypot(dx, dy);
+    const TL = 64, GL = 64 * q.c;
+    g += arrow(bx, by, bx + dx / dl * TL, by + dy / dl * TL) + text(bx + dx / dl * TL * 0.6 + 14, by + dy / dl * TL * 0.6 + 4, lab("T"), "start");
+    g += arrow(bx, by + 9, bx, by + 9 + GL) + text(bx + 8, by + 9 + GL, lab("F", "g"));
+    g += `<circle class="s fp" cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="9"/>`;
+    $("cn-svg").innerHTML = g;
+    $("cn-read").innerHTML = `<p class="m"><var>r</var> = <var>L</var> sin θ = ${fmt(q.r, 2)} m</p>
+      <p class="m"><var>T</var> = <var>mg</var>/cos θ = ${fmt(q.T, 1)} N &nbsp;(<var>mg</var> = ${fmt(q.m * g0, 1)} N)</p>
+      <p class="m"><var>v</var> = √(<var>gr</var> tan θ) = ${fmt(q.v, 2)} m/s</p>
+      <p class="m">Time for one lap = 2π<var>r</var>/<var>v</var> = ${fmt(q.P, 2)} s</p>
+      <p class="verdict">Change only the mass: the speed and the lap time stay the same. The tension and gravity both scale with <var>m</var>, so the mass cancels.</p>`;
+  }
+  animate($("cn-svg"), dt => { if(!st.playing) return; const q = vals(); st.phase += 2 * Math.PI * dt / q.P; draw(); });
+  draw();
+})();
+
+/* ---------- Gravitational field explorer ---------- */
+(function(){
+  const PL = {earth: ["Earth", 5.97e24, 6.37e6], moon: ["Moon", 7.35e22, 1.74e6], mars: ["Mars", 6.42e23, 3.39e6], jupiter: ["Jupiter", 1.90e27, 6.99e7]};
+  let pl = "earth";
+  segButtons($("fld-pl"), Object.entries(PL).map(([k, v]) => [k, v[0]]), id => { pl = id; draw(); }, "earth");
+  ["fld-d", "fld-m"].forEach(id => $(id).addEventListener("input", draw));
+  function draw(){
+    const [name, M, R] = PL[pl], d = +$("fld-d").value, m = +$("fld-m").value;
+    $("fld-d-out").textContent = fmt(d, 1) + " × radius"; $("fld-m-out").textContent = m + " kg";
+    const gs = G * M / (R * R), gd = gs / (d * d), Fd = m * gd;
+    const cx = 75, cy = 150, Rp = 50;
+    let g = "";
+    for(let x = 20; x <= 450; x += 38) for(let y = 18; y <= 290; y += 38){
+      const dist = Math.hypot(x - cx, y - cy);
+      if(dist < Rp + 12) continue;
+      const rel = (Rp / dist) ** 2, L = Math.max(11, 36 * rel), ux = (cx - x) / dist, uy = (cy - y) / dist;
+      g += arrow(x, y, x + ux * L, y + uy * L, "s thin", "ahs");
+    }
+    g += `<circle class="s fpan" cx="${cx}" cy="${cy}" r="${Rp}"/>` + text(cx, cy + 5, name, "middle", 13, "lab");
+    const qx = cx + d * Rp;
+    g += `<line class="s ref" x1="${cx}" y1="${cy + 30}" x2="${qx}" y2="${cy + 30}" stroke-dasharray="3 3"/>` + text((cx + qx) / 2 + 20, cy + 46, lab("r", "", ` = ${fmt(d, 1)}`) + lab("R"), "middle");
+    const FL = Math.max(6, 70 / (d * d));
+    g += arrow(qx - 9, cy, qx - 9 - FL, cy) + `<rect class="s fp" x="${qx - 9}" y="${cy - 9}" width="18" height="18"/>`;
+    g += text(qx, cy - 18, lab("F", "g", ` = ${fmt(Fd, 1)} N`), "middle");
+    $("fld-svg").innerHTML = g;
+    $("fld-read").innerHTML = `<p class="m">Surface field of ${name}: <var>g</var> = <var>GM</var>/<var>R</var>² = ${fmt(gs, 2)} N/kg</p>
+      <p class="m">At <var>r</var> = ${fmt(d, 1)}<var>R</var>: <var>g</var> = ${fmt(gs, 2)}/${fmt(d, 1)}² = ${fmt(gd, 3)} N/kg</p>
+      <p class="m">Force on the ${m} kg probe: <var>F</var><sub>g</sub> = <var>mg</var> = ${fmt(Fd, 1)} N</p>
+      <p class="verdict">Compared with the surface, the field is 1/${fmt(d * d, 2)} as strong. That’s the inverse-square law.</p>`;
+  }
+  draw();
+})();
+
+/* ---------- Orbit explorer ---------- */
+(function(){
+  const RE = 6.37e6, ME = 5.97e24, lo = 1.03, hi = 62, TISS = 5546;
+  const st = {phase: 0};
+  const uFor = rr => Math.round(1000 * Math.log(rr / lo) / Math.log(hi / lo));
+  const PRE = [["iss", "ISS (400 km up)", 6.77e6], ["gps", "GPS satellite", 2.66e7], ["geo", "Geostationary", 4.22e7], ["moon", "The Moon", 3.84e8]];
+  let exact = 6.77e6;
+  segButtons($("orb-pre"), PRE.map(p => [p[0], p[1]]), id => { const p = PRE.find(q => q[0] === id); exact = p[2]; $("orb-u").value = uFor(p[2] / RE); draw(); }, "iss");
+  $("orb-u").value = uFor(6.77e6 / RE);
+  $("orb-u").addEventListener("input", () => { exact = null; $("orb-pre").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", "false")); draw(); });
+  function vals(){
+    const r = exact || lo * Math.pow(hi / lo, +$("orb-u").value / 1000) * RE, rr = r / RE;
+    const v = Math.sqrt(G * ME / r), T = 2 * Math.PI * r / v, gg = G * ME / (r * r);
+    return {rr, r, v, T, gg};
+  }
+  function tstr(T){
+    if(T < 7200) return fmt(T / 60, 1) + " minutes";
+    if(T < 172800) return fmt(T / 3600, 1) + " hours";
+    return fmt(T / 86400, 1) + " days";
+  }
+  function draw(){
+    const q = vals();
+    $("orb-u-out").innerHTML = `${sci(q.r, 2)} m (${fmt(q.rr, 1)} Earth radii)`;
+    const cx = 220, cy = 160, Ro = 125, Re = Math.max(3, Ro / q.rr);
+    const sx = cx + Ro * Math.cos(st.phase), sy = cy - Ro * Math.sin(st.phase), tx = -Math.sin(st.phase), ty = -Math.cos(st.phase);
+    let g = `<circle class="s dash thin" cx="${cx}" cy="${cy}" r="${Ro}" fill="none"/>`;
+    g += `<circle class="s fpan" cx="${cx}" cy="${cy}" r="${Re.toFixed(1)}"/>`;
+    g += Re > 30 ? text(cx, cy + 5, "Earth", "middle", 12, "lab") : text(cx, cy + Re + 16, "Earth", "middle", 12, "lab");
+    g += arrow(sx, sy, sx + tx * 44, sy + ty * 44, "s thin") + text(sx + tx * 56, sy + ty * 56 + 5, lab("v"), "middle");
+    const ux = (cx - sx) / Ro, uy = (cy - sy) / Ro;
+    g += arrow(sx, sy, sx + ux * 38, sy + uy * 38) + text(sx + ux * 52 + uy * 12, sy + uy * 52 - ux * 12 + 5, lab("F", "g"), "middle");
+    g += `<rect class="s fp" x="${(sx - 7).toFixed(1)}" y="${(sy - 7).toFixed(1)}" width="14" height="14"/>`;
+    $("orb-svg").innerHTML = g;
+    $("orb-read").innerHTML = `<p class="m">Altitude above the surface: ${fmt((q.r - RE) / 1000, 0)} km</p>
+      <p class="m">Orbital speed: <var>v</var> = √(<var>GM</var>/<var>r</var>) = ${fmt(Math.round(q.v), 0)} m/s (${fmt(q.v / 1000, 2)} km/s)</p>
+      <p class="m">Period: <var>T</var> = 2π<var>r</var>/<var>v</var> = ${q.T < 1e5 ? fmt(Math.round(q.T), 0) : sci(q.T, 2)} s ≈ ${tstr(q.T)}</p>
+      <p class="m">Gravitational field at this orbit: <var>g</var> = ${fmt(q.gg, 3)} N/kg</p>
+      <p class="verdict">${q.rr < 1.2 ? "Gravity here is still most of its surface value. Astronauts float because they are in free fall along with their spacecraft." : "Farther out, the satellite moves more slowly and has a longer way to go, so its period grows quickly."}</p>`;
+  }
+  animate($("orb-svg"), dt => { if(reduceMotion) return; st.phase += 2 * Math.PI * dt / (6 * vals().T / TISS); draw(); });
+  draw();
+})();
+
+/* ---------- Kepler explorer ---------- */
+(function(){
+  const st = {playing: !reduceMotion, M: 0, wedges: true};
+  playButton($("kp-play"), st);
+  $("kp-wedge").addEventListener("click", () => { st.wedges = !st.wedges; $("kp-wedge").setAttribute("aria-pressed", String(st.wedges)); draw(); });
+  $("kp-e").addEventListener("input", draw);
+  const a = 165, cx = 230, cy = 150;
+  function pos(M, e){
+    let E = M;
+    for(let i = 0; i < 8; i++) E -= (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
+    const b = a * Math.sqrt(1 - e * e);
+    return [cx + a * Math.cos(E), cy - b * Math.sin(E), a * (1 - e * Math.cos(E))];
+  }
+  function draw(){
+    const e = +$("kp-e").value; $("kp-e-out").textContent = e.toFixed(2);
+    const b = a * Math.sqrt(1 - e * e), sx = cx + a * e;
+    let g = "";
+    if(st.wedges){
+      const N = 12;
+      for(let k = 0; k < N; k += 2){
+        let pts = [`${sx.toFixed(1)},${cy}`];
+        for(let j = 0; j <= 10; j++){ const p = pos(2 * Math.PI * (k + j / 10) / N, e); pts.push(`${p[0].toFixed(1)},${p[1].toFixed(1)}`); }
+        g += `<polygon points="${pts.join(" ")}" style="fill:var(--tint);stroke:var(--accent);stroke-width:1"/>`;
+      }
+    }
+    g += `<ellipse class="s thin" cx="${cx}" cy="${cy}" rx="${a}" ry="${b.toFixed(1)}" fill="none"/>`;
+    g += `<circle class="s fp" cx="${sx.toFixed(1)}" cy="${cy}" r="11"/>` + text(sx, cy + 28, "Sun", "middle", 12, "lab");
+    const p = pos(st.M, e);
+    g += `<line class="s thin" x1="${sx.toFixed(1)}" y1="${cy}" x2="${p[0].toFixed(1)}" y2="${p[1].toFixed(1)}"/>`;
+    g += `<circle class="fi" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="7"/>`;
+    g += text(cx + a + 8, cy + 4, "perihelion", "start", 12, "lab") + text(cx - a - 8, cy + 4, "aphelion", "end", 12, "lab");
+    $("kp-svg").innerHTML = g;
+    const speedRel = Math.sqrt(2 * a / p[2] - 1);
+    $("kp-read").innerHTML = e === 0
+      ? `<p>With eccentricity 0 the orbit is a circle. The planet stays the same distance from the Sun and moves at a constant speed: uniform circular motion.</p>`
+      : `<p>Right now the planet is moving at <strong>${fmt(speedRel, 2)}×</strong> the speed it would have in a circular orbit of the same size.</p>
+         <p>At perihelion it moves <strong>${fmt((1 + e) / (1 - e), 2)}×</strong> faster than at aphelion. (Earth’s orbit has <var>e</var> = 0.017, so its speed changes by only about 3%.)</p>`;
+  }
+  animate($("kp-svg"), dt => { if(!st.playing) return; st.M = (st.M + 2 * Math.PI * dt / 12) % (2 * Math.PI); draw(); });
+  draw();
+  const calc = () => {
+    const av = parseFloat($("kp-a").value);
+    $("kp-T").innerHTML = av > 0 ? `→ <var>T</var> = <var>a</var><sup>3/2</sup> = ${fmt(Math.pow(av, 1.5), 2)} years` : "";
+  };
+  $("kp-a").addEventListener("input", calc); calc();
+})();
+
+/* ---------- Practice ---------- */
+document.querySelectorAll(".prob").forEach((p, i) => {
+  const fb = p.querySelector(".fb"), sol = p.querySelector(".psol"), sb = p.querySelector(".showsol");
+  const inputs = [...p.querySelectorAll("input[data-ans]")];
+  const check = () => {
+    let right = 0, filled = 0;
+    inputs.forEach(inp => {
+      inp.classList.remove("ok", "no");
+      if(inp.value.trim() === "") return;
+      filled++;
+      const v = parseFloat(inp.value), ans = +inp.dataset.ans;
+      const ok = Math.abs(v - ans) <= Math.max(0.02 * Math.abs(ans), 0.05);
+      inp.classList.add(ok ? "ok" : "no"); if(ok) right++;
+    });
+    if(filled === 0) fb.textContent = "Type an answer first.";
+    else if(right === inputs.length) fb.innerHTML = "✓ <strong>Correct.</strong> Nice work.";
+    else fb.innerHTML = `✗ ${right ? "Partly right. " : ""}Hint: ${p.dataset.hint}`;
+  };
+  p.querySelector(".check").addEventListener("click", check);
+  inputs.forEach(inp => inp.addEventListener("keydown", e => { if(e.key === "Enter") check(); }));
+  sb.addEventListener("click", () => {
+    sol.hidden = !sol.hidden;
+    sb.setAttribute("aria-expanded", String(!sol.hidden));
+    sb.textContent = sol.hidden ? "Show solution" : "Hide solution";
+    if(!sol.hidden) requestAnimationFrame(() => redraws.forEach(f => f()));
+  });
+  const h = document.createElement("h3"); h.textContent = `Practice ${i + 1}`;
+  const c = sol.cloneNode(true); c.hidden = false; c.removeAttribute("data-stepper");
+  c.querySelectorAll("[id]").forEach(e => e.removeAttribute("id"));
+  c.querySelectorAll(".ln.hid").forEach(e => e.classList.remove("hid"));
+  const item = document.createElement("div"); item.className = "keyitem"; item.append(h, c);
+  $("key").append(item);
+});
+
+</script>
+</body>
+</html>
