@@ -963,7 +963,9 @@ if(document.fonts && document.fonts.ready) document.fonts.ready.then(() => redra
 const $ = id => document.getElementById(id);
 function fmt(x, d = 1){
   if(Math.abs(x - Math.round(x)) < 0.005) return String(Math.round(x));
-  return x.toFixed(d).replace(/\.?0+$/, "");
+  let s = x.toFixed(d);
+  if(s.includes(".")) s = s.replace(/\.?0+$/, "");
+  return s;
 }
 function sv(main, sub, rest = "", size = 11){
   return `<tspan class="it">${main}</tspan><tspan dy="4" font-size="${size}">${sub}</tspan><tspan dy="-4">${rest}</tspan>`;
